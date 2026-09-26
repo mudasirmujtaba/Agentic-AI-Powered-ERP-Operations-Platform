@@ -1,0 +1,21 @@
+@OpsPilot.Api_HostAddress = https://localhost:7170
+
+### Log in — replace with your seeded admin credentials
+POST {{OpsPilot.Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@opspilot.local",
+  "password": "CHANGE_ME"
+}
+
+### Call with no token — should return 401
+GET {{OpsPilot.Api_HostAddress}}/api/auth/me
+Accept: application/json
+
+### Call with a token — paste the accessToken from the login response above
+GET {{OpsPilot.Api_HostAddress}}/api/auth/me
+Accept: application/json
+Authorization: Bearer PASTE_TOKEN_HERE
+
+###

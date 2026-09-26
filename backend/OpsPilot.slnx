@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/OpsPilot.Api/OpsPilot.Api.csproj" />
+    <Project Path="src/OpsPilot.Application/OpsPilot.Application.csproj" />
+    <Project Path="src/OpsPilot.Domain/OpsPilot.Domain.csproj" />
+    <Project Path="src/OpsPilot.Infrastructure/OpsPilot.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/OpsPilot.UnitTests/OpsPilot.UnitTests.csproj" />
+  </Folder>
+</Solution>
