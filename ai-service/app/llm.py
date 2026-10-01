@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any, TypeVar
 
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
@@ -30,6 +31,18 @@ def _model(fast: bool) -> ChatGroq:
     )
 
 
+_UNICODE_SPACES = re.compile(r"[    ]")
+_UNICODE_HYPHENS = re.compile(r"[‐‑]")
+_NATIVE_CITATION = re.compile(r"【(\d+)†[^】]*】")
+
+
+def clean(text: str) -> str:
+    """Normalises model output: non-breaking spaces/hyphens to ASCII, and native 【1†L3】 citations to [1]."""
+    text = _UNICODE_SPACES.sub(" ", text)
+    text = _UNICODE_HYPHENS.sub("-", text)
+    return _NATIVE_CITATION.sub(r"[\1]", text)
+
+
 def _usage(message: Any) -> dict:
     meta = getattr(message, "usage_metadata", None) or {}
     return {"input_tokens": meta.get("input_tokens", 0), "output_tokens": meta.get("output_tokens", 0)}
@@ -42,7 +55,7 @@ def complete(system: str, user: str, *, fast: bool = False, history: list[dict] 
         messages.append(HumanMessage(turn["content"]) if turn["role"] == "user" else _assistant(turn["content"]))
     messages.append(HumanMessage(user))
     response = _model(fast).invoke(messages)
-    return str(response.content).strip(), _usage(response)
+    return clean(str(response.content).strip()), _usage(response)
 
 
 def structured(schema: type[T], system: str, user: str, *, fast: bool = False, history: list[dict] | None = None) -> tuple[T, dict]:

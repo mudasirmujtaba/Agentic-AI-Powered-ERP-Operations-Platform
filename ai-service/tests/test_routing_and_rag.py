@@ -37,3 +37,11 @@ def test_keyword_retrieval_finds_the_approval_threshold_section():
     top, _ = kb.search("Who must approve purchases above $10,000?", k=1)[0]
     assert top.section == "Approval thresholds"
     assert isinstance(top, Chunk)
+
+
+def test_model_output_is_normalised():
+    from app.llm import clean
+
+    assert clean("more than 60\u202fdays\u00a0overdue") == "more than 60 days overdue"
+    assert clean("non\u2011breaking") == "non-breaking"
+    assert clean("approved by a Manager【1†L3-L5】【2†L2】.") == "approved by a Manager[1][2]."

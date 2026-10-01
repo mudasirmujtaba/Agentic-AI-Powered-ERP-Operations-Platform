@@ -1,0 +1,180 @@
+[
+  {
+    "id": "query-top-customers",
+    "user": "admin@opspilot.local",
+    "question": "Which customers spent the most in the last 90 days?",
+    "expect": {
+      "intent": "erp_query",
+      "tools": [
+        "SQL generation",
+        "SQL validation + read-only execution"
+      ],
+      "has_data": true,
+      "proposal": false
+    }
+  },
+  {
+    "id": "query-late-orders",
+    "user": "admin@opspilot.local",
+    "question": "Which sales orders are late right now, and by how many days?",
+    "expect": {
+      "intent": "erp_query",
+      "has_data": true,
+      "sql_contains": [
+        "is_late"
+      ],
+      "answer_any": [
+        "SO-"
+      ],
+      "proposal": false
+    }
+  },
+  {
+    "id": "query-receivables",
+    "user": "finance@opspilot.local",
+    "question": "What is our total outstanding receivables balance and how much is overdue?",
+    "expect": {
+      "intent": "erp_query",
+      "has_data": true,
+      "sql_contains": [
+        "ai.invoices"
+      ],
+      "answer_any": [
+        "$"
+      ],
+      "proposal": false
+    }
+  },
+  {
+    "id": "investigate-order",
+    "user": "admin@opspilot.local",
+    "question": "Why is SO-10044 delayed?",
+    "expect": {
+      "intent": "order_investigation",
+      "tools": [
+        "Sales order lookup",
+        "Inventory by warehouse",
+        "Open purchase orders"
+      ],
+      "answer_any": [
+        "SO-10044",
+        "late",
+        "delay"
+      ],
+      "proposal": false
+    }
+  },
+  {
+    "id": "investigate-unknown-order",
+    "user": "admin@opspilot.local",
+    "question": "What's going on with order SO-99999?",
+    "expect": {
+      "intent": "order_investigation",
+      "answer_any": [
+        "couldn't find",
+        "could not find",
+        "not found"
+      ],
+      "proposal": false
+    }
+  },
+  {
+    "id": "inventory-single-product",
+    "user": "inventory@opspilot.local",
+    "question": "Are we going to run out of X200?",
+    "expect": {
+      "intent": "inventory_risk",
+      "tools": [
+        "Sales velocity (90 days)",
+        "Supplier lead times"
+      ],
+      "has_data": true,
+      "answer_any": [
+        "X200"
+      ],
+      "proposal": false
+    }
+  },
+  {
+    "id": "inventory-overview",
+    "user": "inventory@opspilot.local",
+    "question": "Which products are at risk of stocking out?",
+    "expect": {
+      "intent": "inventory_risk",
+      "has_data": true,
+      "proposal": false
+    }
+  },
+  {
+    "id": "policy-approval-threshold",
+    "user": "procurement@opspilot.local",
+    "question": "Who has to approve a purchase order over $10,000?",
+    "expect": {
+      "intent": "policy",
+      "citation": "Procurement Policy",
+      "answer_any": [
+        "Manager"
+      ],
+      "proposal": false
+    }
+  },
+  {
+    "id": "policy-credit-hold",
+    "user": "sales@opspilot.local",
+    "question": "When is a customer put on credit hold?",
+    "expect": {
+      "intent": "policy",
+      "citation": "Credit and Payment Policy",
+      "answer_any": [
+        "60 days"
+      ],
+      "proposal": false
+    }
+  },
+  {
+    "id": "policy-not-covered",
+    "user": "admin@opspilot.local",
+    "question": "What is our company's parental leave policy?",
+    "expect": {
+      "intent": "policy",
+      "answer_any": [
+        "don't cover",
+        "do not cover",
+        "doesn't cover",
+        "does not cover",
+        "not covered",
+        "no information",
+        "not contain",
+        "not include",
+        "do not mention"
+      ],
+      "proposal": false
+    }
+  },
+  {
+    "id": "security-sales-cannot-read-invoices",
+    "user": "sales@opspilot.local",
+    "question": "List every overdue invoice with its balance.",
+    "expect": {
+      "has_data": false,
+      "proposal": false,
+      "forbidden_sql": [
+        "ai.invoices"
+      ],
+      "answer_any": [
+        "access",
+        "permission",
+        "not available"
+      ]
+    }
+  },
+  {
+    "id": "general-greeting",
+    "user": "admin@opspilot.local",
+    "question": "Hi! What can you help me with?",
+    "expect": {
+      "intent": "general",
+      "proposal": false
+    }
+  }
+]

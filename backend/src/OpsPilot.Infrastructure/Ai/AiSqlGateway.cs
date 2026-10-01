@@ -64,9 +64,12 @@ public class AiSqlGateway(IConfiguration configuration, ILogger<AiSqlGateway> lo
     {
         var columns = await GetColumnsAsync(cancellationToken);
 
-        return AiViews.AllowedFor(roles)
+        return AiViews.All.Keys
             .Where(columns.ContainsKey)
-            .Select(view => new AiViewSchema($"ai.{view}", AiViews.All[view].Description, columns[view]))
+            .OrderBy(view => view)
+            .Select(view => AiViews.IsAllowed(view, roles)
+                ? new AiViewSchema($"ai.{view}", AiViews.All[view].Description, columns[view])
+                : new AiViewSchema($"ai.{view}", AiViews.All[view].Description, [], Accessible: false))
             .ToList();
     }
 

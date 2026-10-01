@@ -18,7 +18,7 @@ def answer_policy(state: dict) -> dict:
     with timer.step("Grounded answer"):
         answer, usage = llm.complete(
             "You answer questions about company policy using ONLY the numbered sources. Cite sources inline like [1]. "
-            "If the sources don't contain the answer, say the policy documents don't cover it — never invent a policy. "
+            "If the sources don't contain the answer, say the policy documents don't cover it, without citations — never invent a policy. "
             "Be concise: two to five sentences.",
             f"Question: {state['message']}\n\nSources:\n{sources}",
             history=state.get("history", [])[-2:],

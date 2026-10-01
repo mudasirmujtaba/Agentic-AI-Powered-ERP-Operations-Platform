@@ -43,9 +43,18 @@ def _schema_text(roles_key: str) -> str:
     """Schema of the views this user may read, cached per role set."""
     views = current().erp.schema()
     lines = []
+    restricted = []
     for view in views:
+        if not view.get("accessible", True):
+            restricted.append(view["view"])
+            continue
         columns = ", ".join(f"{c['name']} {c['type']}" for c in view["columns"])
         lines.append(f"{view['view']} — {view['description']}\n  columns: {columns}")
+    if restricted:
+        lines.append(
+            "NOT available to this user's role (never query them): " + ", ".join(restricted)
+            + ". If the question needs them, select a single column named note saying the user's role "
+              "does not have access to that data.")
     return "\n".join(lines)
 
 
@@ -105,6 +114,11 @@ def erp_query(state: dict) -> dict:
             "_tools": timer.steps,
             "_detail": "query failed",
         }
+
+    # A lone `note` column is the model explaining why the question can't be answered from data it may read.
+    if result["columns"] == ["note"]:
+        note = str(result["rows"][0][0]) if result["rows"] else "That question can't be answered from the data available to you."
+        return {"answer": note, "sql": sql, "usage": usage_total, "_tools": timer.steps, "_detail": "not answerable"}
 
     records = _rows_as_records(result, MAX_ROWS_TO_MODEL)
     with timer.step("Result analysis"):

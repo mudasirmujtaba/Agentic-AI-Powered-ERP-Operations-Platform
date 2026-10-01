@@ -16,4 +16,5 @@ public record AiSqlResult(IReadOnlyList<string> Columns, IReadOnlyList<object?[]
 
 public record AiViewColumn(string Name, string Type);
 
-public record AiViewSchema(string View, string Description, IReadOnlyList<AiViewColumn> Columns);
+/// <param name="Accessible">False for views the caller's roles may not read; listed (without columns) so the agent can say so instead of guessing.</param>
+public record AiViewSchema(string View, string Description, IReadOnlyList<AiViewColumn> Columns, bool Accessible = true);
