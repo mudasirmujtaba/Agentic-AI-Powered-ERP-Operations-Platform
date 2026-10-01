@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using OpsPilot.Application.Common.Interfaces;
+using OpsPilot.Domain.Ai;
+using OpsPilot.Domain.Audit;
 using OpsPilot.Domain.Catalog;
 using OpsPilot.Domain.Customers;
 using OpsPilot.Domain.Finance;
@@ -26,6 +28,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<SalesOrder> SalesOrders => Set<SalesOrder>();
     public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<AiConversation> AiConversations => Set<AiConversation>();
+    public DbSet<AiAction> AiActions => Set<AiAction>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

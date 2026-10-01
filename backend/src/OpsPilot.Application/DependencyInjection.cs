@@ -1,5 +1,7 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using OpsPilot.Application.Ai;
+using OpsPilot.Application.Audit;
 using OpsPilot.Application.Categories;
 using OpsPilot.Application.Customers;
 using OpsPilot.Application.Dashboard;
@@ -30,6 +32,9 @@ public static class DependencyInjection
         services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
         services.AddScoped<IInvoiceService, InvoiceService>();
         services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<AuditLogWriter>();
+        services.AddScoped<IAuditLogService, AuditLogService>();
+        services.AddScoped<IAiCopilotService, AiCopilotService>();
 
         return services;
     }

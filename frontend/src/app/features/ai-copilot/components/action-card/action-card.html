@@ -1,0 +1,104 @@
+<section class="action-card rounded-lg border border-amber-300 bg-amber-50/60 p-4" aria-label="AI proposal">
+  <header class="mb-3 flex flex-wrap items-start justify-between gap-2">
+    <div>
+      <div class="flex items-center gap-2 text-sm font-medium">
+        <mat-icon class="!h-5 !w-5 !text-[20px]" aria-hidden="true">approval</mat-icon>
+        {{ action().agent }} proposal
+      </div>
+      <p class="m-0 mt-1 text-sm">{{ action().summary }}</p>
+    </div>
+    <app-status-badge [label]="statusStyle().label" [tone]="statusStyle().tone" />
+  </header>
+
+  @for (order of action().input.orders; track order.supplierId) {
+    <div class="mb-3 overflow-x-auto rounded-md border border-gray-200 bg-white">
+      <div class="border-b border-gray-200 px-3 py-2 text-sm font-medium">
+        {{ order.supplierName }} <span class="font-normal opacity-70">· receive at {{ order.warehouseCode }}</span>
+      </div>
+      <table class="w-full border-collapse text-sm">
+        <thead>
+          <tr class="text-left">
+            <th class="px-3 py-2 font-medium">Product</th>
+            <th class="px-3 py-2 font-medium">Why</th>
+            <th class="px-3 py-2 text-right font-medium">Quantity</th>
+            <th class="px-3 py-2 text-right font-medium">Unit cost</th>
+            <th class="px-3 py-2 text-right font-medium">Line total</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (line of order.lines; track line.productId) {
+            <tr class="border-t border-gray-100 align-top">
+              <td class="px-3 py-2"><span class="font-mono">{{ line.productCode }}</span> {{ line.productName }}</td>
+              <td class="px-3 py-2 text-xs opacity-80">{{ line.reason }}</td>
+              <td class="px-3 py-2 text-right">
+                @if (canDecide()) {
+                  <input
+                    type="number"
+                    min="0"
+                    step="10"
+                    class="w-20 rounded border border-gray-300 px-2 py-1 text-right"
+                    [attr.aria-label]="'Quantity for ' + line.productCode"
+                    [ngModel]="quantities()[line.productId]"
+                    (ngModelChange)="setQuantity(line.productId, $event)"
+                  />
+                } @else {
+                  {{ line.quantity }}
+                }
+              </td>
+              <td class="px-3 py-2 text-right">{{ line.unitCost | currency: 'USD' }}</td>
+              <td class="px-3 py-2 text-right">{{ (quantities()[line.productId] ?? line.quantity) * line.unitCost | currency: 'USD' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <div class="mb-3 text-right text-sm font-medium">Estimated total {{ total() | currency: 'USD' }}</div>
+
+  @if (error(); as message) {
+    <p class="m-0 mb-3 rounded bg-red-50 p-2 text-sm text-red-800" role="alert">{{ message }}</p>
+  }
+
+  @if (canDecide()) {
+    <div class="flex flex-wrap items-center gap-2">
+      <mat-form-field appearance="outline" class="min-w-64 flex-1" subscriptSizing="dynamic">
+        <mat-label>Comment (optional)</mat-label>
+        <input matInput [(ngModel)]="comments" />
+      </mat-form-field>
+      <button mat-flat-button (click)="approve()" [disabled]="busy() || total() === 0">
+        <mat-icon>check</mat-icon>
+        Approve & create drafts
+      </button>
+      <button mat-stroked-button (click)="reject()" [disabled]="busy()">Reject</button>
+    </div>
+    <p class="m-0 mt-2 text-xs opacity-70">
+      Edit quantities to modify the proposal. Approval creates draft purchase orders through the normal purchasing rules;
+      drafts over $10,000 still need a manager's approval when submitted.
+    </p>
+  } @else if (action().status === 'Pending') {
+    <p class="m-0 text-sm opacity-80">Waiting for someone with purchasing rights to review this.</p>
+  }
+
+  @if (action().decision; as decision) {
+    <p class="m-0 mt-2 text-xs opacity-70">
+      {{ decision.status }} by {{ decision.decidedByEmail ?? 'unknown' }} on {{ decision.decidedAtUtc | date: 'medium' }}
+      @if (decision.comments) { · "{{ decision.comments }}" }
+    </p>
+  }
+
+  @if (action().output?.purchaseOrders?.length) {
+    <div class="mt-2 flex flex-wrap gap-2">
+      @for (po of action().output!.purchaseOrders!; track po.id) {
+        <a mat-stroked-button [routerLink]="['/purchasing', po.id]">
+          <mat-icon>open_in_new</mat-icon>
+          {{ po.poNumber }}
+        </a>
+      }
+    </div>
+  }
+
+  @if (action().output?.error; as failure) {
+    <p class="m-0 mt-2 text-sm text-red-800">{{ failure }}</p>
+  }
+</section>

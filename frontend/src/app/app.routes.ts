@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 
+import { WriteAccess } from './core/auth/roles';
 import { authGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   {
@@ -48,6 +50,11 @@ export const routes: Routes = [
       {
         path: 'tickets',
         loadChildren: () => import('./features/tickets/tickets.routes').then((m) => m.TICKETS_ROUTES),
+      },
+      {
+        path: 'audit',
+        canActivate: [roleGuard(WriteAccess.auditLog)],
+        loadComponent: () => import('./features/audit/pages/audit-log/audit-log').then((m) => m.AuditLog),
       },
       {
         path: 'ai-copilot',

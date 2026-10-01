@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using OpsPilot.Application.Audit;
 using OpsPilot.Application.Common.Exceptions;
 using OpsPilot.Application.Common.Interfaces;
 using OpsPilot.Application.Common.Models;
@@ -28,6 +29,7 @@ public interface ISalesOrderService
 public class SalesOrderService(
     IApplicationDbContext db,
     StockLedger ledger,
+    AuditLogWriter audit,
     IValidator<SaveSalesOrderRequest> validator) : ISalesOrderService
 {
     private static readonly Dictionary<string, Expression<Func<SalesOrder, object>>> SortMap =
@@ -105,6 +107,7 @@ public class SalesOrderService(
         await ApplyAsync(order, request, cancellationToken);
 
         db.SalesOrders.Add(order);
+        audit.Record("CreateSalesOrder", "SalesOrder", order.OrderNumber, $"Created draft {order.OrderNumber} ({order.TotalAmount:N2})");
         await db.SaveChangesAsync(cancellationToken);
         return await GetAsync(order.Id, cancellationToken);
     }
@@ -139,6 +142,8 @@ public class SalesOrderService(
         }
 
         order.Confirm(DateTime.UtcNow);
+        audit.Record("ConfirmSalesOrder", "SalesOrder", order.OrderNumber,
+            $"Confirmed {order.OrderNumber} for {customer.Name} ({order.TotalAmount:N2}) and reserved stock");
         await db.SaveChangesAsync(cancellationToken);
         return await GetAsync(id, cancellationToken);
     }
@@ -147,6 +152,7 @@ public class SalesOrderService(
     {
         var order = await LoadAsync(id, cancellationToken);
         order.StartProcessing();
+        audit.Record("ProcessSalesOrder", "SalesOrder", order.OrderNumber, $"Started processing {order.OrderNumber}");
         await db.SaveChangesAsync(cancellationToken);
         return await GetAsync(id, cancellationToken);
     }
@@ -161,6 +167,8 @@ public class SalesOrderService(
             await ledger.ShipAsync(line.ProductId, order.WarehouseId, line.Quantity, line.Product.Code, order.OrderNumber, cancellationToken);
         }
 
+        audit.Record("ShipSalesOrder", "SalesOrder", order.OrderNumber,
+            $"Shipped {order.OrderNumber}{(order.Carrier is null ? "" : $" via {order.Carrier}")} and deducted stock");
         await db.SaveChangesAsync(cancellationToken);
         return await GetAsync(id, cancellationToken);
     }
@@ -169,6 +177,7 @@ public class SalesOrderService(
     {
         var order = await LoadAsync(id, cancellationToken);
         order.Deliver(DateTime.UtcNow);
+        audit.Record("DeliverSalesOrder", "SalesOrder", order.OrderNumber, $"Marked {order.OrderNumber} as delivered");
         await db.SaveChangesAsync(cancellationToken);
         return await GetAsync(id, cancellationToken);
     }
@@ -188,6 +197,8 @@ public class SalesOrderService(
             }
         }
 
+        audit.Record("CancelSalesOrder", "SalesOrder", order.OrderNumber,
+            $"Cancelled {order.OrderNumber}{(releaseReservations ? " and released reserved stock" : "")}");
         await db.SaveChangesAsync(cancellationToken);
         return await GetAsync(id, cancellationToken);
     }

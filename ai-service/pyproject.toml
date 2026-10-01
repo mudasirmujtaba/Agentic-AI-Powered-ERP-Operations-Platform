@@ -1,0 +1,25 @@
+[project]
+name = "opspilot-ai-service"
+version = "0.1.0"
+description = "OpsPilot AI Copilot: LangGraph agents over the OpsPilot ERP API"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "langgraph>=0.6",
+    "langgraph-checkpoint-sqlite>=2.0",
+    "langchain-core>=0.3",
+    "langchain-groq>=0.3",
+    "httpx>=0.27",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    "fastembed>=0.4",
+    "numpy>=1.26",
+]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

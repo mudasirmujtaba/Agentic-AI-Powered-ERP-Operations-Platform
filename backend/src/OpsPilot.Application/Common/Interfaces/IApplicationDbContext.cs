@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using OpsPilot.Domain.Ai;
+using OpsPilot.Domain.Audit;
 using OpsPilot.Domain.Catalog;
 using OpsPilot.Domain.Customers;
 using OpsPilot.Domain.Finance;
@@ -21,6 +23,9 @@ public interface IApplicationDbContext
     DbSet<SalesOrder> SalesOrders { get; }
     DbSet<PurchaseOrder> PurchaseOrders { get; }
     DbSet<Invoice> Invoices { get; }
+    DbSet<AuditLog> AuditLogs { get; }
+    DbSet<AiConversation> AiConversations { get; }
+    DbSet<AiAction> AiActions { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

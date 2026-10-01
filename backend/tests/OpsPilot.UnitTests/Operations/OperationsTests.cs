@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using OpsPilot.Application.Audit;
 using OpsPilot.Application.Finance;
 using OpsPilot.Application.Inventory;
 using OpsPilot.Application.Purchasing;
@@ -44,13 +45,15 @@ public class OperationsTests : IDisposable
 
     private ApplicationDbContext Db() => _database.NewContext();
 
-    private SalesOrderService Sales(ApplicationDbContext db) => new(db, new StockLedger(db), new SaveSalesOrderRequestValidator());
+    private AuditLogWriter Audit(ApplicationDbContext db) => new(db, _database.CurrentUser);
 
-    private PurchaseOrderService Purchasing(ApplicationDbContext db) => new(db, new StockLedger(db), _database.CurrentUser,
+    private SalesOrderService Sales(ApplicationDbContext db) => new(db, new StockLedger(db), Audit(db), new SaveSalesOrderRequestValidator());
+
+    private PurchaseOrderService Purchasing(ApplicationDbContext db) => new(db, new StockLedger(db), Audit(db), _database.CurrentUser,
         new SavePurchaseOrderRequestValidator(), new RejectPurchaseOrderRequestValidator(), new ReceiveGoodsRequestValidator());
 
     private InventoryService Inventory(ApplicationDbContext db) =>
-        new(db, new StockLedger(db), new AdjustStockRequestValidator(), new TransferStockRequestValidator());
+        new(db, new StockLedger(db), Audit(db), new AdjustStockRequestValidator(), new TransferStockRequestValidator());
 
     private async Task StockAsync(int quantity)
     {
@@ -190,7 +193,7 @@ public class OperationsTests : IDisposable
         InvoiceDto invoice;
         await using (var db = Db())
         {
-            var service = new InvoiceService(db, new RecordPaymentRequestValidator());
+            var service = new InvoiceService(db, Audit(db), new RecordPaymentRequestValidator());
             invoice = await service.CreateFromOrderAsync(new CreateInvoiceRequest(order.Id));
             await Assert.ThrowsAsync<OpsPilot.Application.Common.Exceptions.ConflictException>(
                 () => service.CreateFromOrderAsync(new CreateInvoiceRequest(order.Id)));
@@ -200,7 +203,7 @@ public class OperationsTests : IDisposable
 
         await using (var db = Db())
         {
-            var service = new InvoiceService(db, new RecordPaymentRequestValidator());
+            var service = new InvoiceService(db, Audit(db), new RecordPaymentRequestValidator());
             invoice = await service.RecordPaymentAsync(invoice.Id, new RecordPaymentRequest(400m, null, PaymentMethod.BankTransfer, null));
             Assert.Equal(InvoiceStatus.PartiallyPaid, invoice.Status);
             await Assert.ThrowsAsync<BusinessRuleException>(
@@ -209,7 +212,7 @@ public class OperationsTests : IDisposable
 
         await using (var db = Db())
         {
-            invoice = await new InvoiceService(db, new RecordPaymentRequestValidator())
+            invoice = await new InvoiceService(db, Audit(db), new RecordPaymentRequestValidator())
                 .RecordPaymentAsync(invoice.Id, new RecordPaymentRequest(600m, null, PaymentMethod.Card, null));
         }
         Assert.Equal(InvoiceStatus.Paid, invoice.Status);

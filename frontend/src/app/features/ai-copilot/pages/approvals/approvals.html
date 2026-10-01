@@ -1,0 +1,33 @@
+<app-page-header title="AI approval center" subtitle="Operations proposed by Copilot agents. Nothing runs until someone approves it." />
+
+<mat-button-toggle-group [value]="filter()" (change)="setFilter($event.value)" aria-label="Filter by status" class="mb-4">
+  <mat-button-toggle value="Pending">Pending</mat-button-toggle>
+  <mat-button-toggle value="Executed">Executed</mat-button-toggle>
+  <mat-button-toggle value="Rejected">Rejected</mat-button-toggle>
+  <mat-button-toggle value="Failed">Failed</mat-button-toggle>
+  <mat-button-toggle value="All">All</mat-button-toggle>
+</mat-button-toggle-group>
+
+@if (loading()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+@if (error(); as message) {
+  <p class="rounded-md bg-red-50 p-3 text-red-800" role="alert">{{ message }}</p>
+}
+
+<div class="flex max-w-5xl flex-col gap-4">
+  @for (action of actions(); track action.id) {
+    <div>
+      <div class="mb-1 flex flex-wrap items-center justify-between gap-2 text-xs opacity-70">
+        <span>Requested by {{ action.requestedByEmail ?? 'unknown' }} · {{ action.createdAtUtc | date: 'medium' }}</span>
+        <a [routerLink]="['/ai-copilot', action.conversationId]">Open conversation</a>
+      </div>
+      <app-action-card [action]="action" (decided)="onDecided($event)" />
+    </div>
+  } @empty {
+    @if (!loading()) {
+      <p class="opacity-70">No {{ filter() === 'All' ? '' : filter().toLowerCase() }} proposals.</p>
+    }
+  }
+</div>

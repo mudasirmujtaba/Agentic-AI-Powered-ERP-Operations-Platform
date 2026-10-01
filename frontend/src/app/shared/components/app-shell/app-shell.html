@@ -1,7 +1,7 @@
 <mat-sidenav-container class="shell-container">
   <mat-sidenav mode="side" opened class="shell-nav">
     <mat-nav-list>
-      @for (link of navLinks; track link.path) {
+      @for (link of navLinks(); track link.path) {
         <a mat-list-item [routerLink]="link.path" routerLinkActive="active-link" [class.pl-8]="link.child">
           <span [class.text-sm]="link.child">{{ link.label }}</span>
         </a>

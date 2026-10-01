@@ -1,0 +1,70 @@
+<app-page-header title="Audit log" subtitle="Every consequential action, who took it, and whether AI was involved" />
+
+<div class="flex flex-wrap items-center gap-4">
+  <mat-form-field appearance="outline" class="w-full max-w-sm" subscriptSizing="dynamic">
+    <mat-label>Search</mat-label>
+    <mat-icon matPrefix>search</mat-icon>
+    <input matInput placeholder="Document number, user or action" (input)="list.onSearch($any($event.target).value)" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-48" subscriptSizing="dynamic">
+    <mat-label>Source</mat-label>
+    <mat-select (selectionChange)="list.setFilter({ source: $event.value })">
+      <mat-option [value]="undefined">All sources</mat-option>
+      <mat-option value="User">User</mat-option>
+      <mat-option value="AiAssisted">AI-assisted</mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+
+<div class="mt-4 overflow-x-auto rounded-lg border border-gray-200">
+  @if (list.loading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+  @if (list.error(); as error) {
+    <p class="m-0 p-4 text-red-700">{{ error }}</p>
+  }
+
+  <table mat-table [dataSource]="list.items()" class="w-full">
+    <ng-container matColumnDef="occurredAtUtc">
+      <th mat-header-cell *matHeaderCellDef>When</th>
+      <td mat-cell *matCellDef="let e" class="whitespace-nowrap">{{ e.occurredAtUtc | date: 'medium' }}</td>
+    </ng-container>
+    <ng-container matColumnDef="userEmail">
+      <th mat-header-cell *matHeaderCellDef>User</th>
+      <td mat-cell *matCellDef="let e">{{ e.userEmail ?? 'system' }}</td>
+    </ng-container>
+    <ng-container matColumnDef="source">
+      <th mat-header-cell *matHeaderCellDef>Source</th>
+      <td mat-cell *matCellDef="let e">
+        <app-status-badge [label]="e.source === 'AiAssisted' ? 'AI-assisted' : e.source" [tone]="e.source === 'AiAssisted' ? 'warning' : 'neutral'" />
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="action">
+      <th mat-header-cell *matHeaderCellDef>Action</th>
+      <td mat-cell *matCellDef="let e" class="whitespace-nowrap">{{ e.action }}</td>
+    </ng-container>
+    <ng-container matColumnDef="entity">
+      <th mat-header-cell *matHeaderCellDef>Record</th>
+      <td mat-cell *matCellDef="let e" class="whitespace-nowrap"><span class="opacity-60">{{ e.entityType }}</span> <span class="font-mono">{{ e.entityId.length > 20 ? e.entityId.substring(0, 8) + '…' : e.entityId }}</span></td>
+    </ng-container>
+    <ng-container matColumnDef="summary">
+      <th mat-header-cell *matHeaderCellDef>Summary</th>
+      <td mat-cell *matCellDef="let e">{{ e.summary }}</td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="columns"></tr>
+    <tr mat-row *matRowDef="let row; columns: columns"></tr>
+    <tr class="mat-row" *matNoDataRow>
+      <td class="p-4 text-center opacity-70" [attr.colspan]="columns.length">{{ list.loading() ? 'Loading…' : 'No audit entries yet.' }}</td>
+    </tr>
+  </table>
+
+  <mat-paginator
+    [length]="list.totalCount()"
+    [pageIndex]="list.query().page - 1"
+    [pageSize]="list.query().pageSize"
+    [pageSizeOptions]="[25, 50, 100]"
+    (page)="list.onPage($event)"
+  />
+</div>

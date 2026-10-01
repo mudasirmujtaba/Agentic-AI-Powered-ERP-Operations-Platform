@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using OpsPilot.Application.Audit;
 using OpsPilot.Application.Common.Exceptions;
 using OpsPilot.Application.Common.Interfaces;
 using OpsPilot.Application.Common.Models;
@@ -21,6 +22,7 @@ public interface IInventoryService
 public class InventoryService(
     IApplicationDbContext db,
     StockLedger ledger,
+    AuditLogWriter audit,
     IValidator<AdjustStockRequest> adjustValidator,
     IValidator<TransferStockRequest> transferValidator) : IInventoryService
 {
@@ -125,6 +127,8 @@ public class InventoryService(
             await ledger.RemoveAsync(request.ProductId, request.WarehouseId, -request.Quantity, request.Reason, product.Code, "Manual", request.Notes, cancellationToken);
         }
 
+        audit.Record("AdjustStock", "Product", product.Code,
+            $"{request.Reason}: {(request.Quantity > 0 ? "+" : "")}{request.Quantity} {product.Code}{(request.Notes is null ? "" : $" ({request.Notes})")}");
         await db.SaveChangesAsync(cancellationToken);
         return await GetProductStockAsync(request.ProductId, cancellationToken);
     }
@@ -140,6 +144,7 @@ public class InventoryService(
         await ledger.RemoveAsync(product.Id, from.Id, request.Quantity, InventoryTransactionType.Transfer, product.Code, reference, request.Notes, cancellationToken);
         await ledger.AddAsync(product.Id, to.Id, request.Quantity, InventoryTransactionType.Transfer, reference, request.Notes, cancellationToken);
 
+        audit.Record("TransferStock", "Product", product.Code, $"Moved {request.Quantity} {product.Code} {reference}");
         await db.SaveChangesAsync(cancellationToken);
         return await GetProductStockAsync(request.ProductId, cancellationToken);
     }

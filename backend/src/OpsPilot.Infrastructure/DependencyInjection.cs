@@ -5,7 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using OpsPilot.Application.Ai;
 using OpsPilot.Application.Auth;
+using OpsPilot.Infrastructure.Ai;
 using OpsPilot.Application.Common.Interfaces;
 using OpsPilot.Domain.Identity;
 using OpsPilot.Infrastructure.Identity;
@@ -68,6 +70,15 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IdentitySeeder>();
         services.AddScoped<DemoDataSeeder>();
+
+        services.AddScoped<IAiSqlGateway, AiSqlGateway>();
+        var aiOptions = configuration.GetSection(AiServiceOptions.SectionName).Get<AiServiceOptions>() ?? new AiServiceOptions();
+        services.AddHttpClient<IAiAgentClient, AiAgentClient>(client =>
+        {
+            client.BaseAddress = new Uri(aiOptions.BaseUrl.TrimEnd('/') + "/");
+            client.Timeout = TimeSpan.FromSeconds(aiOptions.TimeoutSeconds);
+            client.DefaultRequestHeaders.Add("X-Internal-Key", aiOptions.InternalKey);
+        });
 
         return services;
     }

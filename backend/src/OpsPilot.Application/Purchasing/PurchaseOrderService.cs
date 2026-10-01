@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using OpsPilot.Application.Audit;
 using OpsPilot.Application.Common.Exceptions;
 using OpsPilot.Application.Common.Interfaces;
 using OpsPilot.Application.Common.Models;
@@ -29,6 +30,7 @@ public interface IPurchaseOrderService
 public class PurchaseOrderService(
     IApplicationDbContext db,
     StockLedger ledger,
+    AuditLogWriter audit,
     ICurrentUserService currentUser,
     IValidator<SavePurchaseOrderRequest> saveValidator,
     IValidator<RejectPurchaseOrderRequest> rejectValidator,
@@ -96,6 +98,7 @@ public class PurchaseOrderService(
         await ApplyAsync(po, request, cancellationToken);
 
         db.PurchaseOrders.Add(po);
+        audit.Record("CreatePurchaseOrder", "PurchaseOrder", po.PoNumber, $"Created draft {po.PoNumber} ({po.TotalAmount:N2})");
         await db.SaveChangesAsync(cancellationToken);
         return await GetAsync(po.Id, cancellationToken);
     }
@@ -110,22 +113,30 @@ public class PurchaseOrderService(
     }
 
     public Task<PurchaseOrderDto> SubmitAsync(Guid id, CancellationToken cancellationToken = default) =>
-        TransitionAsync(id, po => po.Submit(DateTime.UtcNow), cancellationToken);
+        TransitionAsync(id, "SubmitPurchaseOrder", po => po.Submit(DateTime.UtcNow),
+            po => po.Status == PurchaseOrderStatus.PendingApproval
+                ? $"Submitted {po.PoNumber} ({po.TotalAmount:N2}) for manager approval"
+                : $"Submitted {po.PoNumber} ({po.TotalAmount:N2}); approved automatically under the threshold",
+            cancellationToken);
 
     public Task<PurchaseOrderDto> ApproveAsync(Guid id, CancellationToken cancellationToken = default) =>
-        TransitionAsync(id, po => po.Approve(currentUser.UserId, DateTime.UtcNow), cancellationToken);
+        TransitionAsync(id, "ApprovePurchaseOrder", po => po.Approve(currentUser.UserId, DateTime.UtcNow),
+            po => $"Approved {po.PoNumber} ({po.TotalAmount:N2})", cancellationToken);
 
     public async Task<PurchaseOrderDto> RejectAsync(Guid id, RejectPurchaseOrderRequest request, CancellationToken cancellationToken = default)
     {
         await rejectValidator.ValidateAndThrowAsync(request, cancellationToken);
-        return await TransitionAsync(id, po => po.Reject(request.Reason.Trim()), cancellationToken);
+        return await TransitionAsync(id, "RejectPurchaseOrder", po => po.Reject(request.Reason.Trim()),
+            po => $"Returned {po.PoNumber} to draft: {request.Reason.Trim()}", cancellationToken);
     }
 
     public Task<PurchaseOrderDto> MarkOrderedAsync(Guid id, CancellationToken cancellationToken = default) =>
-        TransitionAsync(id, po => po.MarkOrdered(DateTime.UtcNow), cancellationToken);
+        TransitionAsync(id, "SendPurchaseOrder", po => po.MarkOrdered(DateTime.UtcNow),
+            po => $"Sent {po.PoNumber} to the supplier", cancellationToken);
 
     public Task<PurchaseOrderDto> CancelAsync(Guid id, CancellationToken cancellationToken = default) =>
-        TransitionAsync(id, po => po.Cancel(DateTime.UtcNow), cancellationToken);
+        TransitionAsync(id, "CancelPurchaseOrder", po => po.Cancel(DateTime.UtcNow),
+            po => $"Cancelled {po.PoNumber}", cancellationToken);
 
     public async Task<PurchaseOrderDto> ReceiveAsync(Guid id, ReceiveGoodsRequest request, CancellationToken cancellationToken = default)
     {
@@ -143,14 +154,18 @@ public class PurchaseOrderService(
                 po.PoNumber, null, cancellationToken);
         }
 
+        var received = request.Lines.Where(l => l.Quantity > 0).Sum(l => l.Quantity);
+        audit.Record("ReceiveGoods", "PurchaseOrder", po.PoNumber, $"Received {received} units against {po.PoNumber} ({po.Status})");
         await db.SaveChangesAsync(cancellationToken);
         return await GetAsync(id, cancellationToken);
     }
 
-    private async Task<PurchaseOrderDto> TransitionAsync(Guid id, Action<PurchaseOrder> transition, CancellationToken cancellationToken)
+    private async Task<PurchaseOrderDto> TransitionAsync(Guid id, string auditAction, Action<PurchaseOrder> transition,
+        Func<PurchaseOrder, string> auditSummary, CancellationToken cancellationToken)
     {
         var po = await LoadAsync(id, cancellationToken);
         transition(po);
+        audit.Record(auditAction, "PurchaseOrder", po.PoNumber, auditSummary(po));
         await db.SaveChangesAsync(cancellationToken);
         return await GetAsync(id, cancellationToken);
     }

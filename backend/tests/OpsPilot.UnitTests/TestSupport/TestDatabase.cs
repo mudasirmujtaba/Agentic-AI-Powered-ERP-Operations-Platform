@@ -35,4 +35,7 @@ public sealed class TestDatabase : IDisposable
 public class FakeCurrentUser : ICurrentUserService
 {
     public Guid? UserId { get; set; } = Guid.NewGuid();
+    public string? Email { get; set; } = "tester@opspilot.local";
+    public string? Name { get; set; } = "Test User";
+    public IReadOnlyList<string> Roles { get; set; } = ["Administrator"];
 }

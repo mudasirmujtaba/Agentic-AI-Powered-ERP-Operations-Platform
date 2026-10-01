@@ -22,4 +22,5 @@ export const WriteAccess = {
   approvePurchaseOrders: [Administrator, Manager],
   receiveGoods: [Administrator, Manager, InventoryManager, ProcurementUser],
   finance: [Administrator, Manager, FinanceUser],
+  auditLog: [Administrator, Manager],
 } as const;

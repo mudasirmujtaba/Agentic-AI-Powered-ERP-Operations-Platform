@@ -1,7 +1,16 @@
 import { Routes } from '@angular/router';
 
-import { FeaturePlaceholder } from '../../shared/components/feature-placeholder/feature-placeholder';
-
 export const AI_COPILOT_ROUTES: Routes = [
-  { path: '', component: FeaturePlaceholder, data: { title: 'AI Copilot' } },
+  {
+    path: '',
+    loadComponent: () => import('./pages/copilot/copilot').then((m) => m.Copilot),
+  },
+  {
+    path: 'approvals',
+    loadComponent: () => import('./pages/approvals/approvals').then((m) => m.Approvals),
+  },
+  {
+    path: ':conversationId',
+    loadComponent: () => import('./pages/copilot/copilot').then((m) => m.Copilot),
+  },
 ];

@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using OpsPilot.Application.Audit;
 using OpsPilot.Application.Common.Exceptions;
 using OpsPilot.Application.Common.Interfaces;
 using OpsPilot.Application.Common.Models;
@@ -20,7 +21,7 @@ public interface IInvoiceService
     Task<InvoiceDto> CancelAsync(Guid id, CancellationToken cancellationToken = default);
 }
 
-public class InvoiceService(IApplicationDbContext db, IValidator<RecordPaymentRequest> paymentValidator) : IInvoiceService
+public class InvoiceService(IApplicationDbContext db, AuditLogWriter audit, IValidator<RecordPaymentRequest> paymentValidator) : IInvoiceService
 {
     private static readonly Dictionary<string, Expression<Func<Invoice, object>>> SortMap =
         new(StringComparer.OrdinalIgnoreCase)
@@ -103,6 +104,7 @@ public class InvoiceService(IApplicationDbContext db, IValidator<RecordPaymentRe
         var invoice = Invoice.FromOrder(order, number);
 
         db.Invoices.Add(invoice);
+        audit.Record("CreateInvoice", "Invoice", invoice.InvoiceNumber, $"Drafted {invoice.InvoiceNumber} for {order.OrderNumber} ({invoice.TotalAmount:N2})");
         await db.SaveChangesAsync(cancellationToken);
         return await GetAsync(invoice.Id, cancellationToken);
     }
@@ -113,6 +115,7 @@ public class InvoiceService(IApplicationDbContext db, IValidator<RecordPaymentRe
         var terms = await db.Customers.Where(c => c.Id == invoice.CustomerId).Select(c => c.PaymentTermsDays).FirstAsync(cancellationToken);
 
         invoice.Issue(DateTime.UtcNow, terms);
+        audit.Record("IssueInvoice", "Invoice", invoice.InvoiceNumber, $"Issued {invoice.InvoiceNumber}, due {invoice.DueDateUtc:yyyy-MM-dd}");
         await db.SaveChangesAsync(cancellationToken);
         return await GetAsync(id, cancellationToken);
     }
@@ -123,6 +126,8 @@ public class InvoiceService(IApplicationDbContext db, IValidator<RecordPaymentRe
         var invoice = await LoadAsync(id, cancellationToken);
 
         invoice.RecordPayment(request.Amount, request.PaidAtUtc ?? DateTime.UtcNow, request.Method, request.Reference?.Trim());
+        audit.Record("RecordPayment", "Invoice", invoice.InvoiceNumber,
+            $"Recorded {request.Amount:N2} by {request.Method} against {invoice.InvoiceNumber} ({invoice.Status})");
         await db.SaveChangesAsync(cancellationToken);
         return await GetAsync(id, cancellationToken);
     }
@@ -131,6 +136,7 @@ public class InvoiceService(IApplicationDbContext db, IValidator<RecordPaymentRe
     {
         var invoice = await LoadAsync(id, cancellationToken);
         invoice.Cancel();
+        audit.Record("CancelInvoice", "Invoice", invoice.InvoiceNumber, $"Cancelled {invoice.InvoiceNumber}");
         await db.SaveChangesAsync(cancellationToken);
         return await GetAsync(id, cancellationToken);
     }
