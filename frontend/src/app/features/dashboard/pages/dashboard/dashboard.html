@@ -1,0 +1,121 @@
+<app-page-header [title]="greeting()" subtitle="Sales, stock, receivables and purchasing at a glance" />
+
+@if (loading()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+@if (error(); as message) {
+  <p class="rounded-md bg-red-50 p-3 text-red-800" role="alert">{{ message }}</p>
+}
+
+@if (summary(); as s) {
+  <section class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5" aria-label="Key figures">
+    @for (tile of tiles(); track tile.label) {
+      <a
+        [routerLink]="tile.link"
+        [queryParams]="tile.queryParams"
+        class="flex flex-col rounded-lg border border-gray-200 p-4 text-inherit no-underline transition-colors hover:bg-gray-50"
+      >
+        <span class="text-sm opacity-70">{{ tile.label }}</span>
+        <span class="mt-1 text-3xl font-medium tracking-tight">{{ tile.value }}</span>
+        <span class="mt-1 text-sm opacity-70">{{ tile.detail }}</span>
+        @if (tile.alert; as alert) {
+          <span class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-amber-800">
+            <mat-icon class="!h-[18px] !w-[18px] !text-[18px]" aria-hidden="true">{{ alert.icon }}</mat-icon>
+            {{ alert.text }}
+          </span>
+        }
+      </a>
+    }
+  </section>
+
+  <section class="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
+    <div class="rounded-lg border border-gray-200 p-4 xl:col-span-2">
+      <h2 class="m-0 text-base font-medium">Invoiced revenue by month</h2>
+      <p class="m-0 mb-2 text-sm opacity-70">Last six months, by invoice issue date</p>
+      <app-revenue-chart [data]="s.revenueByMonth" />
+    </div>
+
+    <div class="rounded-lg border border-gray-200 p-4">
+      <h2 class="m-0 mb-3 text-base font-medium">Top customers, last 12 months</h2>
+      <ol class="m-0 flex list-none flex-col gap-3 p-0">
+        @for (customer of s.topCustomers; track customer.customerId; let i = $index) {
+          <li class="flex items-center justify-between gap-2">
+            <span><span class="mr-2 opacity-60">{{ i + 1 }}.</span>{{ customer.customerName }}</span>
+            <span class="font-medium">{{ customer.revenue | currency: 'USD' : 'symbol' : '1.0-0' }}</span>
+          </li>
+        } @empty {
+          <li class="opacity-70">No invoiced revenue yet.</li>
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+    <div class="rounded-lg border border-gray-200">
+      <div class="flex items-center justify-between p-4 pb-2">
+        <h2 class="m-0 text-base font-medium">Stock needing attention</h2>
+        <a mat-button routerLink="/inventory" [queryParams]="{ lowStockOnly: 'true' }">View all</a>
+      </div>
+      <table class="w-full border-collapse text-sm">
+        <thead>
+          <tr class="border-b border-gray-200 text-left">
+            <th class="px-4 py-2 font-medium">Product</th>
+            <th class="px-4 py-2 text-right font-medium">Available</th>
+            <th class="px-4 py-2 text-right font-medium">Reorder at</th>
+            <th class="px-4 py-2 font-medium">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of s.lowStock; track item.productId) {
+            <tr class="border-b border-gray-100">
+              <td class="px-4 py-2">
+                <a [routerLink]="['/inventory/products', item.productId]" class="font-mono">{{ item.productCode }}</a>
+                {{ item.productName }}
+              </td>
+              <td class="px-4 py-2 text-right font-medium">{{ item.quantityAvailable }}</td>
+              <td class="px-4 py-2 text-right">{{ item.reorderPoint }}</td>
+              <td class="px-4 py-2">
+                <app-status-badge [label]="stockStatuses[item.status].label" [tone]="stockStatuses[item.status].tone" />
+              </td>
+            </tr>
+          } @empty {
+            <tr><td class="px-4 py-3 opacity-70" colspan="4">All products are above their reorder points.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rounded-lg border border-gray-200">
+      <div class="flex items-center justify-between p-4 pb-2">
+        <h2 class="m-0 text-base font-medium">Recent sales orders</h2>
+        <a mat-button routerLink="/sales">View all</a>
+      </div>
+      <table class="w-full border-collapse text-sm">
+        <thead>
+          <tr class="border-b border-gray-200 text-left">
+            <th class="px-4 py-2 font-medium">Order</th>
+            <th class="px-4 py-2 font-medium">Customer</th>
+            <th class="px-4 py-2 font-medium">Status</th>
+            <th class="px-4 py-2 text-right font-medium">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of s.recentOrders; track order.id) {
+            <tr class="border-b border-gray-100">
+              <td class="px-4 py-2">
+                <a [routerLink]="['/sales', order.id]" class="font-mono">{{ order.orderNumber }}</a>
+                <div class="text-xs opacity-60">{{ order.orderDateUtc | date: 'mediumDate' }}</div>
+              </td>
+              <td class="px-4 py-2">{{ order.customerName }}</td>
+              <td class="px-4 py-2">
+                <app-status-badge [label]="orderStatuses[order.status].label" [tone]="orderStatuses[order.status].tone" />
+              </td>
+              <td class="px-4 py-2 text-right">{{ order.totalAmount | currency: 'USD' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}

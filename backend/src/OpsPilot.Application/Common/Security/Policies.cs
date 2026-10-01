@@ -9,6 +9,13 @@ public static class Policies
     public const string ManageSuppliers = nameof(ManageSuppliers);
     public const string ManageCatalog = nameof(ManageCatalog);
     public const string ManageWarehouses = nameof(ManageWarehouses);
+    public const string ManageInventory = nameof(ManageInventory);
+    public const string ManageSalesOrders = nameof(ManageSalesOrders);
+    public const string FulfilSalesOrders = nameof(FulfilSalesOrders);
+    public const string ManagePurchaseOrders = nameof(ManagePurchaseOrders);
+    public const string ApprovePurchaseOrders = nameof(ApprovePurchaseOrders);
+    public const string ReceiveGoods = nameof(ReceiveGoods);
+    public const string ManageFinance = nameof(ManageFinance);
 
     public static readonly IReadOnlyDictionary<string, string[]> RolesByPolicy = new Dictionary<string, string[]>
     {
@@ -16,5 +23,12 @@ public static class Policies
         [ManageSuppliers] = [Roles.Administrator, Roles.Manager, Roles.ProcurementUser],
         [ManageCatalog] = [Roles.Administrator, Roles.Manager, Roles.InventoryManager],
         [ManageWarehouses] = [Roles.Administrator, Roles.InventoryManager],
+        [ManageInventory] = [Roles.Administrator, Roles.Manager, Roles.InventoryManager],
+        [ManageSalesOrders] = [Roles.Administrator, Roles.Manager, Roles.SalesUser],
+        [FulfilSalesOrders] = [Roles.Administrator, Roles.Manager, Roles.InventoryManager],
+        [ManagePurchaseOrders] = [Roles.Administrator, Roles.Manager, Roles.ProcurementUser],
+        [ApprovePurchaseOrders] = [Roles.Administrator, Roles.Manager],
+        [ReceiveGoods] = [Roles.Administrator, Roles.Manager, Roles.InventoryManager, Roles.ProcurementUser],
+        [ManageFinance] = [Roles.Administrator, Roles.Manager, Roles.FinanceUser],
     };
 }

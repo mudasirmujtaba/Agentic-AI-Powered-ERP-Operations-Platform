@@ -1,0 +1,98 @@
+<app-page-header title="Inventory" subtitle="Stock on hand, reserved for open orders, and available to promise">
+  <a mat-button routerLink="/inventory/warehouses">
+    <mat-icon>warehouse</mat-icon>
+    Warehouses
+  </a>
+</app-page-header>
+
+<div class="flex flex-wrap items-center gap-4">
+  <mat-form-field appearance="outline" class="w-full max-w-sm" subscriptSizing="dynamic">
+    <mat-label>Search</mat-label>
+    <mat-icon matPrefix>search</mat-icon>
+    <input matInput placeholder="Product code or name" (input)="list.onSearch($any($event.target).value)" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-64" subscriptSizing="dynamic">
+    <mat-label>Warehouse</mat-label>
+    <mat-select (selectionChange)="list.setFilter({ warehouseId: $event.value })">
+      <mat-option [value]="undefined">All warehouses</mat-option>
+      @for (warehouse of warehouses(); track warehouse.id) {
+        <mat-option [value]="warehouse.id">{{ warehouse.code }} · {{ warehouse.name }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-slide-toggle [checked]="initialLowStockOnly" (change)="list.setFilter({ lowStockOnly: $event.checked ? 'true' : undefined })">
+    At or below reorder point
+  </mat-slide-toggle>
+</div>
+
+<div class="mt-4 overflow-x-auto rounded-lg border border-gray-200">
+  @if (list.loading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (list.error(); as error) {
+    <p class="m-0 p-4 text-red-700">{{ error }}</p>
+  }
+
+  <table mat-table [dataSource]="list.items()" matSort matSortActive="productCode" matSortDirection="asc" (matSortChange)="list.onSort($event)" class="w-full">
+    <ng-container matColumnDef="productCode">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Code</th>
+      <td mat-cell *matCellDef="let s" class="font-mono">{{ s.productCode }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="productName">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Product</th>
+      <td mat-cell *matCellDef="let s">{{ s.productName }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="categoryName">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
+      <td mat-cell *matCellDef="let s">{{ s.categoryName }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="quantityOnHand">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-right">On hand</th>
+      <td mat-cell *matCellDef="let s" class="text-right">{{ s.quantityOnHand }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="quantityReserved">
+      <th mat-header-cell *matHeaderCellDef class="text-right">Reserved</th>
+      <td mat-cell *matCellDef="let s" class="text-right">{{ s.quantityReserved }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="quantityAvailable">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-right">Available</th>
+      <td mat-cell *matCellDef="let s" class="text-right font-medium">{{ s.quantityAvailable }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="reorderPoint">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-right">Reorder point</th>
+      <td mat-cell *matCellDef="let s" class="text-right">{{ s.reorderPoint }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let s">
+        <app-status-badge [label]="statuses[s.status].label" [tone]="statuses[s.status].tone" />
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="columns"></tr>
+    <tr mat-row *matRowDef="let row; columns: columns" (click)="open(row)" class="cursor-pointer hover:bg-gray-50"></tr>
+    <tr class="mat-row" *matNoDataRow>
+      <td class="p-4 text-center opacity-70" [attr.colspan]="columns.length">
+        {{ list.loading() ? 'Loading…' : 'No products match your filters.' }}
+      </td>
+    </tr>
+  </table>
+
+  <mat-paginator
+    [length]="list.totalCount()"
+    [pageIndex]="list.query().page - 1"
+    [pageSize]="list.query().pageSize"
+    [pageSizeOptions]="[10, 20, 50]"
+    (page)="list.onPage($event)"
+  />
+</div>

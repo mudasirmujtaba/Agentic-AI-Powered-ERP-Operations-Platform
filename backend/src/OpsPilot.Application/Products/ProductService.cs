@@ -53,6 +53,7 @@ public class ProductService(IApplicationDbContext db, IValidator<SaveProductRequ
                 p.Name,
                 p.Category.Name,
                 p.UnitPrice,
+                p.Cost,
                 p.ReorderPoint,
                 p.SafetyStock,
                 p.PrimarySupplier != null ? p.PrimarySupplier.Name : null,

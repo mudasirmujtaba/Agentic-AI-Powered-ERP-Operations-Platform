@@ -33,9 +33,26 @@ public class DemoDataSeeder(
         if (await db.Categories.AnyAsync())
         {
             logger.LogInformation("Demo master data already present, skipping.");
+        }
+        else
+        {
+            await SeedMasterDataAsync();
+        }
+
+        if (await db.InventoryItems.AnyAsync())
+        {
+            logger.LogInformation("Demo operational data already present, skipping.");
             return;
         }
 
+        var (orders, purchaseOrders, invoices) = await new DemoOperationsSeeder(db).SeedAsync();
+        logger.LogInformation(
+            "Seeded demo operations: {Orders} sales orders, {PurchaseOrders} purchase orders, {Invoices} invoices.",
+            orders, purchaseOrders, invoices);
+    }
+
+    private async Task SeedMasterDataAsync()
+    {
         var suppliers = BuildSuppliers();
         var categories = BuildCategories();
         var products = BuildProducts(categories, suppliers);

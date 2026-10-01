@@ -35,4 +35,9 @@ export abstract class ResourceApi<TListItem, TDetail, TSave> {
   update(id: string, request: TSave): Observable<TDetail> {
     return this.http.put<TDetail>(`${this.baseUrl}/${id}`, request);
   }
+
+  /** Workflow action such as `POST /api/sales-orders/{id}/confirm`. */
+  action(id: string, action: string, body: unknown = {}): Observable<TDetail> {
+    return this.http.post<TDetail>(`${this.baseUrl}/${id}/${action}`, body);
+  }
 }

@@ -25,6 +25,7 @@ public record ProductListItemDto(
     string Name,
     string CategoryName,
     decimal UnitPrice,
+    decimal Cost,
     int ReorderPoint,
     int SafetyStock,
     string? PrimarySupplierName,

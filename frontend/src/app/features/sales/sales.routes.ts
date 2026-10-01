@@ -1,7 +1,16 @@
 import { Routes } from '@angular/router';
 
-import { FeaturePlaceholder } from '../../shared/components/feature-placeholder/feature-placeholder';
-
 export const SALES_ROUTES: Routes = [
-  { path: '', component: FeaturePlaceholder, data: { title: 'Sales' } },
+  {
+    path: '',
+    loadComponent: () => import('./pages/sales-order-list/sales-order-list').then((m) => m.SalesOrderList),
+  },
+  {
+    path: 'new',
+    loadComponent: () => import('./pages/sales-order-page/sales-order-page').then((m) => m.SalesOrderPage),
+  },
+  {
+    path: ':id',
+    loadComponent: () => import('./pages/sales-order-page/sales-order-page').then((m) => m.SalesOrderPage),
+  },
 ];

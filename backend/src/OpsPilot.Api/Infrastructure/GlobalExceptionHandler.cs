@@ -2,6 +2,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using OpsPilot.Application.Common.Exceptions;
+using OpsPilot.Domain.Common;
 
 namespace OpsPilot.Api.Infrastructure;
 
@@ -30,6 +31,12 @@ public class GlobalExceptionHandler(IProblemDetailsService problemDetailsService
             {
                 Status = StatusCodes.Status409Conflict,
                 Title = "Conflict.",
+                Detail = exception.Message,
+            },
+            BusinessRuleException => new ProblemDetails
+            {
+                Status = StatusCodes.Status422UnprocessableEntity,
+                Title = "Business rule violated.",
                 Detail = exception.Message,
             },
             _ => new ProblemDetails

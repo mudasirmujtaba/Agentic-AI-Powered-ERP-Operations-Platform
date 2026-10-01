@@ -1,0 +1,173 @@
+<app-page-header [title]="order()?.orderNumber ?? 'New sales order'" [subtitle]="order()?.customerName ?? 'Create a draft order'">
+  @if (order(); as o) {
+    <app-status-badge [label]="statuses[o.status].label" [tone]="statuses[o.status].tone" />
+  }
+  <a mat-button routerLink="/sales">
+    <mat-icon>arrow_back</mat-icon>
+    Sales orders
+  </a>
+</app-page-header>
+
+@if (loading() || busy()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+@if (formError(); as error) {
+  <p class="mb-4 rounded-md bg-red-50 p-3 text-red-800" role="alert">{{ error }}</p>
+}
+
+@if (order(); as o) {
+  <!-- Workflow actions available in the current status, filtered by role. -->
+  <div class="mb-4 flex flex-wrap gap-2">
+    @if (o.status === 'Draft' && canSell()) {
+      <button mat-flat-button (click)="confirm()" [disabled]="busy()">
+        <mat-icon>check</mat-icon>
+        Confirm & reserve stock
+      </button>
+    }
+    @if (o.status === 'Confirmed' && canFulfil()) {
+      <button mat-stroked-button (click)="startProcessing()" [disabled]="busy()">Start processing</button>
+    }
+    @if ((o.status === 'Confirmed' || o.status === 'Processing') && canFulfil()) {
+      <button mat-flat-button (click)="showShipForm.set(!showShipForm())" [disabled]="busy()">
+        <mat-icon>local_shipping</mat-icon>
+        Ship
+      </button>
+    }
+    @if (o.status === 'Shipped' && canFulfil()) {
+      <button mat-flat-button (click)="deliver()" [disabled]="busy()">Mark delivered</button>
+    }
+    @if ((o.status === 'Shipped' || o.status === 'Delivered') && !o.invoiceId && canInvoice()) {
+      <button mat-flat-button (click)="createInvoice()" [disabled]="busy()">
+        <mat-icon>receipt_long</mat-icon>
+        Create invoice
+      </button>
+    }
+    @if (o.invoiceId) {
+      <a mat-stroked-button [routerLink]="['/finance/invoices', o.invoiceId]">
+        <mat-icon>receipt_long</mat-icon>
+        Invoice {{ o.invoiceNumber }}
+      </a>
+    }
+    @if ((o.status === 'Draft' || o.status === 'Confirmed' || o.status === 'Processing') && canSell()) {
+      <button mat-button (click)="cancel()" [disabled]="busy()">Cancel order</button>
+    }
+  </div>
+
+  @if (showShipForm()) {
+    <form [formGroup]="shipForm" (ngSubmit)="ship()" class="mb-4 flex flex-wrap items-start gap-3 rounded-lg border border-gray-200 p-4">
+      <mat-form-field appearance="outline">
+        <mat-label>Carrier</mat-label>
+        <input matInput formControlName="carrier" placeholder="UPS" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Tracking number</mat-label>
+        <input matInput formControlName="trackingNumber" />
+      </mat-form-field>
+      <button mat-flat-button type="submit" class="mt-2" [disabled]="busy()">Confirm shipment</button>
+    </form>
+  }
+
+  <dl class="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-gray-200 p-4 text-sm md:grid-cols-4">
+    <div><dt class="opacity-70">Ordered</dt><dd class="m-0">{{ o.orderDateUtc | date: 'medium' }}</dd></div>
+    <div><dt class="opacity-70">Required by</dt><dd class="m-0">{{ (o.requiredDateUtc | date: 'mediumDate') ?? '—' }}</dd></div>
+    <div><dt class="opacity-70">Warehouse</dt><dd class="m-0">{{ o.warehouseName }}</dd></div>
+    <div><dt class="opacity-70">Total</dt><dd class="m-0 text-base font-medium">{{ o.totalAmount | currency: 'USD' }}</dd></div>
+    @if (o.confirmedAtUtc) {
+      <div><dt class="opacity-70">Confirmed</dt><dd class="m-0">{{ o.confirmedAtUtc | date: 'medium' }}</dd></div>
+    }
+    @if (o.shippedAtUtc) {
+      <div><dt class="opacity-70">Shipped</dt><dd class="m-0">{{ o.shippedAtUtc | date: 'medium' }}</dd></div>
+      <div><dt class="opacity-70">Carrier / tracking</dt><dd class="m-0">{{ o.carrier ?? '—' }} {{ o.trackingNumber }}</dd></div>
+    }
+    @if (o.deliveredAtUtc) {
+      <div><dt class="opacity-70">Delivered</dt><dd class="m-0">{{ o.deliveredAtUtc | date: 'medium' }}</dd></div>
+    }
+    @if (o.cancelledAtUtc) {
+      <div><dt class="opacity-70">Cancelled</dt><dd class="m-0">{{ o.cancelledAtUtc | date: 'medium' }}</dd></div>
+    }
+  </dl>
+}
+
+@if (isEditable()) {
+  <form [formGroup]="form" (ngSubmit)="save()" class="max-w-5xl">
+    <section class="grid grid-cols-1 gap-x-4 md:grid-cols-3">
+      <mat-form-field appearance="outline">
+        <mat-label>Customer</mat-label>
+        <mat-select formControlName="customerId">
+          @for (customer of customers(); track customer.id) {
+            <mat-option [value]="customer.id">{{ customer.name }} ({{ customer.code }})</mat-option>
+          }
+        </mat-select>
+        <mat-error>{{ firstError(form.controls.customerId) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Fulfilment warehouse</mat-label>
+        <mat-select formControlName="warehouseId">
+          @for (warehouse of warehouses(); track warehouse.id) {
+            <mat-option [value]="warehouse.id">{{ warehouse.code }} · {{ warehouse.name }}</mat-option>
+          }
+        </mat-select>
+        <mat-error>{{ firstError(form.controls.warehouseId) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Required by</mat-label>
+        <input matInput type="date" formControlName="requiredDate" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="md:col-span-3">
+        <mat-label>Notes</mat-label>
+        <textarea matInput rows="2" formControlName="notes"></textarea>
+        <mat-error>{{ firstError(form.controls.notes) }}</mat-error>
+      </mat-form-field>
+    </section>
+
+    <h2 class="mb-2 mt-0 text-lg font-medium">Lines</h2>
+    <app-line-items-editor [lines]="lines" [products]="products()" />
+
+    <div class="mt-6 flex gap-2">
+      <button mat-flat-button type="submit" [disabled]="busy() || loading()">
+        {{ id() ? 'Save draft' : 'Create draft order' }}
+      </button>
+      <a mat-button routerLink="/sales">Back</a>
+    </div>
+  </form>
+} @else if (order(); as o) {
+  <h2 class="mb-2 mt-0 text-lg font-medium">Lines</h2>
+  <div class="overflow-x-auto rounded-lg border border-gray-200">
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr class="border-b border-gray-200 text-left">
+          <th class="p-3 font-medium">Product</th>
+          <th class="p-3 text-right font-medium">Quantity</th>
+          <th class="p-3 text-right font-medium">Unit price</th>
+          <th class="p-3 text-right font-medium">Line total</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (line of o.lines; track line.id) {
+          <tr class="border-b border-gray-100">
+            <td class="p-3">
+              <a [routerLink]="['/inventory/products', line.productId]" class="font-mono">{{ line.productCode }}</a>
+              {{ line.productName }}
+            </td>
+            <td class="p-3 text-right">{{ line.quantity }}</td>
+            <td class="p-3 text-right">{{ line.unitPrice | currency: 'USD' }}</td>
+            <td class="p-3 text-right">{{ line.lineTotal | currency: 'USD' }}</td>
+          </tr>
+        }
+      </tbody>
+      <tfoot>
+        <tr>
+          <td class="p-3 font-medium" colspan="3">Total</td>
+          <td class="p-3 text-right font-medium">{{ o.totalAmount | currency: 'USD' }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  @if (o.notes) {
+    <p class="mt-4 text-sm"><span class="opacity-70">Notes:</span> {{ o.notes }}</p>
+  }
+}

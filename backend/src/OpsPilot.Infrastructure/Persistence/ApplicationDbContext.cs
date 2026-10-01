@@ -4,8 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using OpsPilot.Application.Common.Interfaces;
 using OpsPilot.Domain.Catalog;
 using OpsPilot.Domain.Customers;
+using OpsPilot.Domain.Finance;
 using OpsPilot.Domain.Identity;
 using OpsPilot.Domain.Inventory;
+using OpsPilot.Domain.Purchasing;
+using OpsPilot.Domain.Sales;
 using OpsPilot.Domain.Suppliers;
 
 namespace OpsPilot.Infrastructure.Persistence;
@@ -18,6 +21,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<Supplier> Suppliers => Set<Supplier>();
     public DbSet<Warehouse> Warehouses => Set<Warehouse>();
+    public DbSet<InventoryItem> InventoryItems => Set<InventoryItem>();
+    public DbSet<InventoryTransaction> InventoryTransactions => Set<InventoryTransaction>();
+    public DbSet<SalesOrder> SalesOrders => Set<SalesOrder>();
+    public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

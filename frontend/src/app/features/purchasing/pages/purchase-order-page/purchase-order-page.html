@@ -1,0 +1,181 @@
+<app-page-header [title]="po()?.poNumber ?? 'New purchase order'" [subtitle]="po()?.supplierName ?? 'Create a draft purchase order'">
+  @if (po(); as o) {
+    <app-status-badge [label]="statuses[o.status].label" [tone]="statuses[o.status].tone" />
+  }
+  <a mat-button routerLink="/purchasing">
+    <mat-icon>arrow_back</mat-icon>
+    Purchase orders
+  </a>
+</app-page-header>
+
+@if (loading() || busy()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+@if (formError(); as error) {
+  <p class="mb-4 rounded-md bg-red-50 p-3 text-red-800" role="alert">{{ error }}</p>
+}
+
+@if (po(); as o) {
+  @if (o.rejectionReason && o.status === 'Draft') {
+    <p class="mb-4 rounded-md bg-amber-50 p-3 text-amber-900">
+      <strong>Returned by approver:</strong> {{ o.rejectionReason }}
+    </p>
+  }
+
+  @if (o.status === 'PendingApproval') {
+    <p class="mb-4 rounded-md bg-amber-50 p-3 text-amber-900">
+      This order totals {{ o.totalAmount | currency: 'USD' }}, above the {{ o.approvalThreshold | currency: 'USD' : 'symbol' : '1.0-0' }}
+      approval threshold, and is waiting for a manager.
+    </p>
+  }
+
+  <div class="mb-4 flex flex-wrap gap-2">
+    @if (o.status === 'Draft' && canPurchase()) {
+      <button mat-flat-button (click)="submit()" [disabled]="busy()">
+        <mat-icon>send</mat-icon>
+        Submit
+      </button>
+    }
+    @if (o.status === 'PendingApproval' && canApprove()) {
+      <button mat-flat-button (click)="approve()" [disabled]="busy()">
+        <mat-icon>verified</mat-icon>
+        Approve
+      </button>
+      <button mat-stroked-button (click)="showRejectForm.set(!showRejectForm())" [disabled]="busy()">Reject</button>
+    }
+    @if (o.status === 'Approved' && canPurchase()) {
+      <button mat-flat-button (click)="markOrdered()" [disabled]="busy()">Mark as sent to supplier</button>
+    }
+    @if ((o.status === 'Ordered' || o.status === 'PartiallyReceived') && canReceive()) {
+      <button mat-flat-button (click)="showReceiveForm.set(!showReceiveForm())" [disabled]="busy()">
+        <mat-icon>inventory</mat-icon>
+        Receive goods
+      </button>
+    }
+    @if ((o.status === 'Draft' || o.status === 'PendingApproval' || o.status === 'Approved' || o.status === 'Ordered') && canPurchase()) {
+      <button mat-button (click)="cancel()" [disabled]="busy()">Cancel PO</button>
+    }
+  </div>
+
+  @if (showRejectForm()) {
+    <div class="mb-4 flex flex-wrap items-start gap-3 rounded-lg border border-gray-200 p-4">
+      <mat-form-field appearance="outline" class="w-full max-w-lg">
+        <mat-label>Reason for rejection</mat-label>
+        <input matInput [formControl]="rejectReason" />
+        <mat-error>{{ firstError(rejectReason) }}</mat-error>
+      </mat-form-field>
+      <button mat-flat-button class="mt-2" (click)="reject()" [disabled]="busy()">Return to draft</button>
+    </div>
+  }
+
+  @if (showReceiveForm()) {
+    <div class="mb-4 rounded-lg border border-gray-200 p-4">
+      <h2 class="m-0 mb-3 text-base font-medium">Quantities received at {{ o.warehouseName }}</h2>
+      @for (line of o.lines; track line.id; let i = $index) {
+        <div class="flex flex-wrap items-center gap-4">
+          <span class="w-72"><span class="font-mono">{{ line.productCode }}</span> {{ line.productName }}</span>
+          <span class="w-40 text-sm opacity-70">{{ line.quantityRemaining }} of {{ line.quantity }} outstanding</span>
+          <mat-form-field appearance="outline" class="w-36">
+            <mat-label>Received</mat-label>
+            <input matInput type="number" min="0" [max]="line.quantityRemaining" [formControl]="receiveQuantities.at(i)" />
+            <mat-error>{{ firstError(receiveQuantities.at(i)) }}</mat-error>
+          </mat-form-field>
+        </div>
+      }
+      <button mat-flat-button (click)="receive()" [disabled]="busy()">Post receipt</button>
+    </div>
+  }
+
+  <dl class="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-gray-200 p-4 text-sm md:grid-cols-4">
+    <div><dt class="opacity-70">Created</dt><dd class="m-0">{{ o.orderDateUtc | date: 'medium' }}</dd></div>
+    <div><dt class="opacity-70">Expected delivery</dt><dd class="m-0">{{ (o.expectedDeliveryDateUtc | date: 'mediumDate') ?? '—' }}</dd></div>
+    <div><dt class="opacity-70">Receive at</dt><dd class="m-0">{{ o.warehouseName }}</dd></div>
+    <div><dt class="opacity-70">Total</dt><dd class="m-0 text-base font-medium">{{ o.totalAmount | currency: 'USD' }}</dd></div>
+    @if (o.approvedAtUtc) {
+      <div><dt class="opacity-70">Approved</dt><dd class="m-0">{{ o.approvedAtUtc | date: 'medium' }}</dd></div>
+    }
+    @if (o.orderedAtUtc) {
+      <div><dt class="opacity-70">Sent to supplier</dt><dd class="m-0">{{ o.orderedAtUtc | date: 'medium' }}</dd></div>
+    }
+    @if (o.completedAtUtc) {
+      <div><dt class="opacity-70">Completed</dt><dd class="m-0">{{ o.completedAtUtc | date: 'medium' }}</dd></div>
+    }
+  </dl>
+}
+
+@if (isEditable()) {
+  <form [formGroup]="form" (ngSubmit)="save()" class="max-w-5xl">
+    <section class="grid grid-cols-1 gap-x-4 md:grid-cols-3">
+      <mat-form-field appearance="outline">
+        <mat-label>Supplier</mat-label>
+        <mat-select formControlName="supplierId">
+          @for (supplier of suppliers(); track supplier.id) {
+            <mat-option [value]="supplier.id">{{ supplier.name }} ({{ supplier.averageLeadTimeDays }}-day lead time)</mat-option>
+          }
+        </mat-select>
+        <mat-error>{{ firstError(form.controls.supplierId) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Receive at</mat-label>
+        <mat-select formControlName="warehouseId">
+          @for (warehouse of warehouses(); track warehouse.id) {
+            <mat-option [value]="warehouse.id">{{ warehouse.code }} · {{ warehouse.name }}</mat-option>
+          }
+        </mat-select>
+        <mat-error>{{ firstError(form.controls.warehouseId) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Expected delivery</mat-label>
+        <input matInput type="date" formControlName="expectedDate" />
+        <mat-hint>Defaults to the supplier's lead time</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="md:col-span-3">
+        <mat-label>Notes</mat-label>
+        <textarea matInput rows="2" formControlName="notes"></textarea>
+      </mat-form-field>
+    </section>
+
+    <h2 class="mb-2 mt-0 text-lg font-medium">Lines</h2>
+    <app-line-items-editor [lines]="lines" [products]="products()" priceLabel="Unit cost" />
+
+    <div class="mt-6 flex gap-2">
+      <button mat-flat-button type="submit" [disabled]="busy() || loading()">
+        {{ id() ? 'Save draft' : 'Create draft PO' }}
+      </button>
+      <a mat-button routerLink="/purchasing">Back</a>
+    </div>
+  </form>
+} @else if (po(); as o) {
+  <h2 class="mb-2 mt-0 text-lg font-medium">Lines</h2>
+  <div class="overflow-x-auto rounded-lg border border-gray-200">
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr class="border-b border-gray-200 text-left">
+          <th class="p-3 font-medium">Product</th>
+          <th class="p-3 text-right font-medium">Ordered</th>
+          <th class="p-3 text-right font-medium">Received</th>
+          <th class="p-3 text-right font-medium">Unit cost</th>
+          <th class="p-3 text-right font-medium">Line total</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (line of o.lines; track line.id) {
+          <tr class="border-b border-gray-100">
+            <td class="p-3">
+              <a [routerLink]="['/inventory/products', line.productId]" class="font-mono">{{ line.productCode }}</a>
+              {{ line.productName }}
+            </td>
+            <td class="p-3 text-right">{{ line.quantity }}</td>
+            <td class="p-3 text-right">{{ line.quantityReceived }}</td>
+            <td class="p-3 text-right">{{ line.unitCost | currency: 'USD' }}</td>
+            <td class="p-3 text-right">{{ line.lineTotal | currency: 'USD' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

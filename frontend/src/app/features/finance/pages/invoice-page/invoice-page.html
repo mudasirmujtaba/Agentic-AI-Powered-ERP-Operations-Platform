@@ -1,0 +1,136 @@
+<app-page-header [title]="invoice()?.invoiceNumber ?? 'Invoice'" [subtitle]="invoice()?.customerName ?? ''">
+  @if (invoice(); as i) {
+    <app-status-badge [label]="statuses[i.status].label" [tone]="statuses[i.status].tone" />
+    @if (i.isOverdue) {
+      <app-status-badge [label]="overdue.label" [tone]="overdue.tone" />
+    }
+  }
+  <a mat-button routerLink="/finance">
+    <mat-icon>arrow_back</mat-icon>
+    Invoices
+  </a>
+</app-page-header>
+
+@if (busy()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+@if (error(); as message) {
+  <p class="mb-4 rounded-md bg-red-50 p-3 text-red-800" role="alert">{{ message }}</p>
+}
+
+@if (invoice(); as i) {
+  @if (canManage()) {
+    <div class="mb-4 flex flex-wrap gap-2">
+      @if (i.status === 'Draft') {
+        <button mat-flat-button (click)="issue()" [disabled]="busy()">
+          <mat-icon>send</mat-icon>
+          Issue invoice
+        </button>
+      }
+      @if (i.status === 'Issued' || i.status === 'PartiallyPaid') {
+        <button mat-flat-button (click)="openPaymentForm()" [disabled]="busy()">
+          <mat-icon>payments</mat-icon>
+          Record payment
+        </button>
+      }
+      @if ((i.status === 'Draft' || i.status === 'Issued') && i.amountPaid === 0) {
+        <button mat-button (click)="cancel()" [disabled]="busy()">Cancel invoice</button>
+      }
+    </div>
+  }
+
+  @if (showPaymentForm()) {
+    <form [formGroup]="paymentForm" (ngSubmit)="recordPayment()" class="mb-4 flex flex-wrap items-start gap-3 rounded-lg border border-gray-200 p-4">
+      <mat-form-field appearance="outline">
+        <mat-label>Amount (USD)</mat-label>
+        <input matInput type="number" min="0.01" step="0.01" formControlName="amount" />
+        <mat-hint>Outstanding {{ i.balance | currency: 'USD' }}</mat-hint>
+        <mat-error>{{ firstError(paymentForm.controls.amount) }}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Paid on</mat-label>
+        <input matInput type="date" formControlName="paidAt" />
+        <mat-error>{{ firstError(paymentForm.controls.paidAt) }}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Method</mat-label>
+        <mat-select formControlName="method">
+          @for (method of methods; track method.value) {
+            <mat-option [value]="method.value">{{ method.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Reference</mat-label>
+        <input matInput formControlName="reference" />
+      </mat-form-field>
+      <button mat-flat-button type="submit" class="mt-2" [disabled]="busy()">Save payment</button>
+      <button mat-button type="button" class="mt-2" (click)="showPaymentForm.set(false)">Close</button>
+    </form>
+  }
+
+  <dl class="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-gray-200 p-4 text-sm md:grid-cols-4">
+    <div>
+      <dt class="opacity-70">Sales order</dt>
+      <dd class="m-0"><a [routerLink]="['/sales', i.salesOrderId]" class="font-mono">{{ i.salesOrderNumber }}</a></dd>
+    </div>
+    <div><dt class="opacity-70">Issued</dt><dd class="m-0">{{ (i.issueDateUtc | date: 'mediumDate') ?? 'Not issued' }}</dd></div>
+    <div><dt class="opacity-70">Due</dt><dd class="m-0">{{ (i.dueDateUtc | date: 'mediumDate') ?? '—' }}</dd></div>
+    <div><dt class="opacity-70">Total</dt><dd class="m-0">{{ i.totalAmount | currency: 'USD' }}</dd></div>
+    <div><dt class="opacity-70">Paid</dt><dd class="m-0">{{ i.amountPaid | currency: 'USD' }}</dd></div>
+    <div><dt class="opacity-70">Balance</dt><dd class="m-0 text-base font-medium">{{ i.balance | currency: 'USD' }}</dd></div>
+  </dl>
+
+  <h2 class="mb-2 mt-0 text-lg font-medium">Lines</h2>
+  <div class="overflow-x-auto rounded-lg border border-gray-200">
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr class="border-b border-gray-200 text-left">
+          <th class="p-3 font-medium">Description</th>
+          <th class="p-3 text-right font-medium">Quantity</th>
+          <th class="p-3 text-right font-medium">Unit price</th>
+          <th class="p-3 text-right font-medium">Line total</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (line of i.lines; track line.id) {
+          <tr class="border-b border-gray-100">
+            <td class="p-3">{{ line.description }}</td>
+            <td class="p-3 text-right">{{ line.quantity }}</td>
+            <td class="p-3 text-right">{{ line.unitPrice | currency: 'USD' }}</td>
+            <td class="p-3 text-right">{{ line.lineTotal | currency: 'USD' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="mb-2 mt-6 text-lg font-medium">Payments</h2>
+  @if (i.payments.length === 0) {
+    <p class="text-sm opacity-70">No payments recorded yet.</p>
+  } @else {
+    <div class="overflow-x-auto rounded-lg border border-gray-200">
+      <table class="w-full border-collapse text-sm">
+        <thead>
+          <tr class="border-b border-gray-200 text-left">
+            <th class="p-3 font-medium">Date</th>
+            <th class="p-3 font-medium">Method</th>
+            <th class="p-3 font-medium">Reference</th>
+            <th class="p-3 text-right font-medium">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (payment of i.payments; track payment.id) {
+            <tr class="border-b border-gray-100">
+              <td class="p-3">{{ payment.paidAtUtc | date: 'mediumDate' }}</td>
+              <td class="p-3">{{ methodLabel(payment.method) }}</td>
+              <td class="p-3">{{ payment.reference ?? '—' }}</td>
+              <td class="p-3 text-right">{{ payment.amount | currency: 'USD' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+}

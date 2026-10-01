@@ -16,6 +16,7 @@ export interface ProductListItem {
   name: string;
   categoryName: string;
   unitPrice: number;
+  cost: number;
   reorderPoint: number;
   safetyStock: number;
   primarySupplierName: string | null;

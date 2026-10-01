@@ -1,0 +1,100 @@
+<app-page-header title="Sales orders" subtitle="Orders from draft through delivery">
+  <button *appHasRole="writeAccess" mat-flat-button routerLink="/sales/new">
+    <mat-icon>add</mat-icon>
+    New order
+  </button>
+</app-page-header>
+
+<div class="flex flex-wrap items-center gap-4">
+  <mat-form-field appearance="outline" class="w-full max-w-sm" subscriptSizing="dynamic">
+    <mat-label>Search</mat-label>
+    <mat-icon matPrefix>search</mat-icon>
+    <input matInput placeholder="Order number or customer" (input)="list.onSearch($any($event.target).value)" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-56" subscriptSizing="dynamic">
+    <mat-label>Status</mat-label>
+    <mat-select [value]="initialStatus" (selectionChange)="list.setFilter({ status: $event.value })">
+      <mat-option [value]="undefined">All statuses</mat-option>
+      @for (status of statusOptions; track status.value) {
+        <mat-option [value]="status.value">{{ status.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-slide-toggle [checked]="initialLateOnly" (change)="list.setFilter({ lateOnly: $event.checked ? 'true' : undefined })">
+    Late orders only
+  </mat-slide-toggle>
+</div>
+
+<div class="mt-4 overflow-x-auto rounded-lg border border-gray-200">
+  @if (list.loading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (list.error(); as error) {
+    <p class="m-0 p-4 text-red-700">{{ error }}</p>
+  }
+
+  <table mat-table [dataSource]="list.items()" matSort matSortActive="orderDateUtc" matSortDirection="desc" (matSortChange)="list.onSort($event)" class="w-full">
+    <ng-container matColumnDef="orderNumber">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Order</th>
+      <td mat-cell *matCellDef="let o" class="font-mono">{{ o.orderNumber }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="customerName">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Customer</th>
+      <td mat-cell *matCellDef="let o">{{ o.customerName }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="orderDateUtc">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Ordered</th>
+      <td mat-cell *matCellDef="let o">{{ o.orderDateUtc | date: 'mediumDate' }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="requiredDateUtc">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Required by</th>
+      <td mat-cell *matCellDef="let o">
+        <span class="inline-flex items-center gap-2">
+          {{ o.requiredDateUtc | date: 'mediumDate' }}
+          @if (o.isLate) {
+            <app-status-badge label="Late" tone="danger" />
+          }
+        </span>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="warehouseCode">
+      <th mat-header-cell *matHeaderCellDef>Warehouse</th>
+      <td mat-cell *matCellDef="let o" class="font-mono">{{ o.warehouseCode }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+      <td mat-cell *matCellDef="let o">
+        <app-status-badge [label]="statuses[o.status].label" [tone]="statuses[o.status].tone" />
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="totalAmount">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-right">Total</th>
+      <td mat-cell *matCellDef="let o" class="text-right">{{ o.totalAmount | currency: 'USD' }}</td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="columns"></tr>
+    <tr mat-row *matRowDef="let row; columns: columns" (click)="open(row)" class="cursor-pointer hover:bg-gray-50"></tr>
+    <tr class="mat-row" *matNoDataRow>
+      <td class="p-4 text-center opacity-70" [attr.colspan]="columns.length">
+        {{ list.loading() ? 'Loading…' : 'No orders match your filters.' }}
+      </td>
+    </tr>
+  </table>
+
+  <mat-paginator
+    [length]="list.totalCount()"
+    [pageIndex]="list.query().page - 1"
+    [pageSize]="list.query().pageSize"
+    [pageSizeOptions]="[10, 20, 50]"
+    (page)="list.onPage($event)"
+  />
+</div>
