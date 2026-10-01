@@ -70,6 +70,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IdentitySeeder>();
         services.AddScoped<DemoDataSeeder>();
+        services.AddScoped<DatabaseInitializer>();
 
         services.AddScoped<IAiSqlGateway, AiSqlGateway>();
         var aiOptions = configuration.GetSection(AiServiceOptions.SectionName).Get<AiServiceOptions>() ?? new AiServiceOptions();

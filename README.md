@@ -1,82 +1,156 @@
 # OpsPilot
 
-An enterprise ERP platform built with **Angular 21**, **ASP.NET Core 10** and **SQL Server**, structured to take an
-agentic AI layer next (see [Roadmap](#roadmap)).
+An enterprise ERP platform with an agentic AI Copilot. It's built with **Angular 21**, **ASP.NET Core 10**,
+**SQL Server**, and a **Python / LangGraph** agent service using Groq-hosted models.
 
-It covers the operational core of a distribution business: master data, inventory, sales order fulfilment,
-purchasing with approvals, invoicing and payments, and a KPI dashboard. Every role sees and can do only what
-its job allows.
+OpsPilot runs the operational core of a distribution business: master data, inventory, sales order fulfilment,
+purchasing with approvals, invoicing and payments, plus a KPI dashboard. On top of that sits a Copilot that
+answers questions from live ERP data, investigates late orders, assesses stock-out risk, cites company policy,
+and drafts purchase orders that a person must approve before anything is created.
+
+> The AI is an intelligent layer over the ERP, not a replacement for it. The ERP keeps responsibility for data
+> integrity, business rules, transactions and authorization, and humans approve consequential actions.
 
 ## Features
 
 | Area | What you can do |
 |---|---|
 | **Dashboard** | Revenue (30 days, year to date), open and late orders, products to reorder, receivables and overdue invoices, pending purchase approvals, a revenue-by-month chart, top customers. Each KPI links to the filtered list behind it. |
-| **Master data** | Customers (with billing/shipping addresses, credit limits, payment terms), suppliers (lead times), products and categories (price, cost, reorder point, safety stock), warehouses. Server-side search, sort and paging everywhere. |
-| **Inventory** | Stock per product per warehouse: on hand, reserved for open orders, and available. Adjustments (count, damage, returns), transfers between warehouses, a full movement ledger, and low-stock status. |
-| **Sales orders** | Draft → Confirmed → Processing → Shipped → Delivered (or Cancelled). Confirming checks the customer's status and **credit limit** and **reserves stock**. Shipping deducts it; cancelling releases it. Late orders are flagged. |
-| **Purchase orders** | Draft → Pending approval → Approved → Ordered → Partially received → Completed. Orders over **$10,000 require a manager's approval**; smaller ones are approved on submit. Receiving goods posts stock into the receiving warehouse. |
-| **Invoicing** | Invoice a shipped order, issue it (the due date comes from the customer's payment terms), and record full or partial payments. Overdue status is computed from the due date. |
+| **Master data** | Customers (with addresses, credit limits, payment terms), suppliers (lead times), products and categories (price, cost, reorder point, safety stock), warehouses. |
+| **Inventory** | Stock per product per warehouse (on hand, reserved, available), adjustments, transfers, a movement ledger, and low-stock status. |
+| **Sales orders** | Draft → Confirmed → Processing → Shipped → Delivered (or Cancelled). Confirming checks the customer's status and **credit limit** and **reserves stock**. Shipping deducts it; cancelling releases it. |
+| **Purchase orders** | Draft → Pending approval → Approved → Ordered → Partially received → Completed. Orders over **$10,000 need a manager's approval**. Receiving goods posts stock. |
+| **Invoicing** | Invoice a shipped order, issue it (the due date comes from payment terms), and record full or partial payments. Overdue status is computed. |
+| **AI Copilot** | Chat over your ERP data, with data tables, cited policy answers, and a step-by-step trace of how each answer was produced. |
+| **Approval center** | Every AI-proposed operation in one place: approve, reject, or modify quantities before approving. |
+| **Audit log** | Every consequential action (confirmations, shipments, approvals, payments, stock adjustments, AI proposals and decisions), with who did it and whether AI was involved. |
 
-Business rules live in the domain model and are enforced on the server. A violation returns
-HTTP 422 with a readable reason, for example
-*"Confirming this order would put Keystone Plant Services over their credit limit: existing exposure 0.00 + order 349,500.00 > limit 50,000.00."*
+### The Copilot's agents
+
+| Ask… | Agent | How it works |
+|---|---|---|
+| "Which customers spent the most in the last 90 days?" | **ERP Query** | The model writes one T-SQL `SELECT`. The ERP validates it and runs it read-only, and the model summarises the rows it got back. |
+| "Why is SO-10044 delayed?" | **Order Investigation** | Gathers the order, its lines, stock by warehouse, open purchase orders and the customer account, derives likely causes, and then explains them. |
+| "Are we going to run out of X200?" | **Inventory Intelligence** | Combines 90-day sales velocity, available stock, incoming purchase orders and supplier lead times into days of cover and projected stock. |
+| "Prepare purchase orders for anything at risk." | **Procurement** | Turns the risk analysis into one draft purchase order per supplier, then **pauses for human approval**. |
+| "Who can approve purchases over $10,000?" | **Policy (RAG)** | Retrieves sections of the company policy documents and answers only from them, citing each source. |
+
+### How the AI is kept safe
+
+- **Least privilege.** The agents call the ERP with the signed-in user's own token, so a user who can't see
+  invoices in OpsPilot can't see them through the Copilot either.
+- **Read-only SQL, validated twice.** Generated SQL is parsed with Microsoft's T-SQL grammar. It must be a single
+  `SELECT` over curated `ai.*` reporting views the user's roles allow. It then runs under a separate login that has
+  `SELECT` on that schema and nothing else, with a 5-second timeout and a 200-row cap.
+- **Human approval.** A proposal stops the LangGraph run (`interrupt`, checkpointed to SQLite). Nothing changes
+  until someone with purchasing rights approves in OpsPilot.
+- **Business rules always apply.** Approved proposals are executed by the same purchasing service the UI uses.
+  The resulting drafts still follow the $10,000 approval threshold. The graph then resumes and reports what
+  actually happened.
+- **Grounded answers.** Investigation, inventory and procurement facts are computed deterministically from ERP
+  data, and the model only explains them. If a tool fails, the Copilot says so rather than guessing.
+- **Auditability and observability.** Proposals, approvals and executions are audit-logged as AI-assisted. Every
+  answer carries a per-node and per-tool timing trace, token usage and the model used.
 
 ## Architecture
 
 ```
-frontend/   Angular 21 (standalone components, signals, zoneless), Angular Material + Tailwind
-backend/
-  src/OpsPilot.Domain          Entities, state machines and invariants (no framework dependencies beyond Identity types)
-  src/OpsPilot.Application     Use-case services, DTOs, FluentValidation validators, authorization policies
-  src/OpsPilot.Infrastructure  EF Core (SQL Server), Identity, JWT, migrations, audit interceptor, demo seeding
-  src/OpsPilot.Api             Controllers, ProblemDetails error mapping, composition root
-  tests/OpsPilot.UnitTests     xUnit tests against a real relational database (SQLite in-memory)
+Angular (ERP UI, dashboard, Copilot, approval center)
+   │  HTTPS + JWT
+ASP.NET Core API ── Identity/JWT, role policies, business rules, audit log, AI gateway
+   │        │
+   │        └── HTTP + internal key ──▶ Python AI service (FastAPI + LangGraph, Groq)
+   │                                      │  calls back with the user's JWT
+   │◀─────────────────────────────────────┘  (ERP APIs, validated read-only SQL)
+SQL Server ── dbo.* transactional tables, ai.* read-only reporting views
 ```
 
-- **Clean Architecture.** Dependencies point inward. Controllers are thin, services orchestrate, and the domain decides.
-- **Stock integrity.** All quantity changes go through one `StockLedger`, which writes a ledger entry for every
-  movement. A database check constraint guarantees `0 ≤ reserved ≤ on hand`.
-- **Security.** ASP.NET Core Identity with JWT bearer tokens. Role-based policies mirror the design document's
-  permission matrix, and the UI hides actions the user can't perform (the API enforces them regardless). Secrets
-  live in .NET user secrets, never in the repository.
-- **Auditability.** Every record carries created/updated timestamps and user ids, stamped automatically by an
-  EF Core interceptor.
-- **Errors.** One global handler maps validation errors (400, with per-field messages that the forms show inline),
-  not found (404), conflicts such as duplicate codes (409) and business-rule violations (422).
+```
+frontend/      Angular 21: standalone components, signals, zoneless; Angular Material + Tailwind
+backend/
+  src/OpsPilot.Domain          Entities, state machines, invariants
+  src/OpsPilot.Application     Use-case services, DTOs, FluentValidation, policies, AI gateway
+  src/OpsPilot.Infrastructure  EF Core, Identity/JWT, migrations, SQL validator, agent client, seeding
+  src/OpsPilot.Api             Controllers, ProblemDetails errors, composition root
+  tests/OpsPilot.UnitTests     xUnit against SQLite in-memory, plus SQL validator tests
+ai-service/
+  app/agents/    Router, ERP Query, Order Investigation, Inventory, Procurement, Policy, General
+  app/graph.py   LangGraph: intent → workflow → (approval interrupt → outcome)
+  knowledge/     Policy documents indexed for RAG (local fastembed embeddings)
+  tests/         pytest: risk maths, proposals, findings, routing, retrieval, interrupt/resume
+```
+
+Other engineering notes:
+- **Stock ledger.** All stock goes through a single `StockLedger`; a check constraint keeps `0 ≤ reserved ≤ on hand`.
+- **Error mapping.** Errors map to 400 (validation), 404, 409 (duplicates) and 422 (business rules).
+- **Secrets.** Secrets never live in the repository: they're in .NET user secrets locally and in a gitignored `.env` for the AI service and Docker.
 
 ## Running locally
 
-**Prerequisites:** .NET SDK 10, Node 22+, SQL Server (any edition) with SQL authentication enabled, and the EF Core
-CLI (`dotnet tool install --global dotnet-ef`).
+**Prerequisites:**
+- .NET SDK 10
+- Node 22+
+- Python 3.10+ with [uv](https://docs.astral.sh/uv/)
+- SQL Server with SQL authentication enabled
+- the EF Core CLI (`dotnet tool install --global dotnet-ef`)
 
-**1. Configure secrets** (from `backend/`; replace the placeholders):
+**1. API secrets** (from `backend/`):
 
 ```powershell
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Database=OpsPilotDb;User Id=<sql-user>;Password=<sql-password>;TrustServerCertificate=True;" --project src/OpsPilot.Api
+dotnet user-secrets set "ConnectionStrings:AiReadOnly" "Server=localhost;Database=OpsPilotDb;User Id=opspilot_ai_reader;Password=<reader-password>;TrustServerCertificate=True;ApplicationIntent=ReadOnly;" --project src/OpsPilot.Api
 dotnet user-secrets set "Jwt:SigningKey" "<at least 32 random characters>" --project src/OpsPilot.Api
 dotnet user-secrets set "Seed:AdminPassword" "<a strong password>" --project src/OpsPilot.Api
+dotnet user-secrets set "AiService:InternalKey" "<random shared secret>" --project src/OpsPilot.Api
 ```
 
-**2. Create the database and start the API:**
+**2. Database and API:**
 
 ```powershell
 dotnet ef database update --project src/OpsPilot.Infrastructure --startup-project src/OpsPilot.Api
 dotnet dev-certs https --trust
-dotnet run --project src/OpsPilot.Api --launch-profile https     # https://localhost:7170
+# First run only: also create the read-only AI login (the connection string's user must be able to create logins).
+dotnet run --project src/OpsPilot.Api --launch-profile https -- --Database:EnsureAiReader=true    # https://localhost:7170
 ```
 
-In Development the API seeds realistic demo data on first start: 20 products, 15 customers, 8 suppliers,
-3 warehouses, and six months of orders, purchase orders, invoices and payments.
+In Development the API seeds demo data on first start: 20 products, 15 customers, 8 suppliers, 3 warehouses,
+and six months of orders, purchase orders, invoices and payments.
 
-**3. Start the frontend** (from `frontend/`):
+**3. AI service** (from `ai-service/`):
 
 ```powershell
-npm install
-npm start                                                         # http://localhost:4200
+Copy-Item .env.example .env      # set GROQ_API_KEY and INTERNAL_KEY (same value as AiService:InternalKey)
+uv sync
+uv run uvicorn app.main:app --port 8001
 ```
 
-**Tests:** `dotnet test` in `backend/` (27 tests) and `npm test -- --watch=false` in `frontend/`.
+**4. Frontend** (from `frontend/`): `npm install`, then `npm start`, and open http://localhost:4200.
+
+### With Docker
+
+```powershell
+Copy-Item .env.example .env      # fill in the passwords and keys
+docker compose up --build        # http://localhost:8080
+```
+
+Compose runs four containers:
+- **SQL Server**
+- **API:** applies migrations, creates the read-only AI login, and seeds demo data on start.
+- **AI service:** keeps paused approval runs and the embedding model on volumes.
+- **nginx:** serves the app and proxies `/api`.
+
+### Tests and CI
+
+| Suite | Command | Count |
+|---|---|---|
+| Backend | `dotnet test` in `backend/` | 43 |
+| AI service | `uv run pytest` in `ai-service/` | 19 |
+| Frontend | `npx ng test --watch=false` in `frontend/` | 12 |
+
+`.github/workflows/ci.yml` runs all three suites on every push and pull request. It also runs:
+- warnings-as-errors builds
+- dependency vulnerability audits (`dotnet list package --vulnerable`, `npm audit`, `pip-audit`)
+- a build of all Docker images
 
 ## Demo accounts
 
@@ -84,46 +158,45 @@ All accounts use the password you set in `Seed:AdminPassword`.
 
 | Email | Role | Can |
 |---|---|---|
-| `admin@opspilot.local` | Administrator | Everything |
-| `manager@opspilot.local` | Manager | Everything operational, including approving large purchase orders |
-| `sales@opspilot.local` | Sales | Customers and sales orders |
-| `inventory@opspilot.local` | Inventory manager | Catalog, stock adjustments and transfers, shipping orders, receiving goods |
-| `procurement@opspilot.local` | Procurement | Suppliers and purchase orders (cannot approve them) |
+| `admin@opspilot.local` | Administrator | Everything, including the audit log |
+| `manager@opspilot.local` | Manager | Everything operational, including approving large purchase orders and AI proposals |
+| `sales@opspilot.local` | Sales | Customers and sales orders; the Copilot can't show them invoices |
+| `inventory@opspilot.local` | Inventory manager | Catalog, stock adjustments and transfers, shipping, receiving |
+| `procurement@opspilot.local` | Procurement | Suppliers and purchase orders; can approve AI proposals but not large POs |
 | `finance@opspilot.local` | Finance | Invoices and payments; read-only elsewhere |
 
-## Five-minute demo
+## Demo walkthrough
 
-1. **Dashboard** (as admin). Point out the late orders, the products to reorder, and the overdue receivables.
-   Click *Products to reorder*: **X200 Industrial Pump** has 43 on hand against a reorder point of 100.
-2. **Inventory → X200.** Stock by warehouse, the reservation held by open orders, and the movement ledger.
-   Under *Purchase orders* there's a 100-unit order from ABC Industrial Supplies, due in 12 days.
-3. **Order to cash.** In *Sales*, create a new order for Apex Manufacturing, then *Confirm* it (stock is reserved),
-   *Start processing*, *Ship* (stock is deducted), *Create invoice*, *Issue*, and *Record payment*. The invoice
-   moves to Paid.
-4. **Rules.** Create an order for 500 × EM-750 for Keystone Plant Services and confirm it. It's rejected with
-   the credit-limit explanation.
-5. **Approvals.** Sign in as `procurement@`, create a purchase order for 30 × EM-750 ($14,400) and *Submit*. It
-   waits for approval, and procurement has no Approve button. Sign in as `manager@`, approve it, mark it as sent,
-   and receive the goods. The stock appears in inventory.
-6. **Roles.** Sign in as `finance@`. Customers are read-only, and invoices are fully actionable.
+1. **Dashboard** (as admin). Show the late orders, products to reorder, and overdue receivables.
+2. **Copilot: questions.** Ask *"Which sales orders are late, and by how many days?"* and open
+   *How I got this* to show the validated SQL and node timings. Then ask *"Why is SO-10044 delayed?"* and
+   *"Are we going to run out of X200?"*.
+3. **Copilot: policy.** Ask *"Who can approve purchases over $10,000?"*. The answer cites the procurement policy.
+4. **Copilot: action with approval.**
+   1. Sign in as `procurement@` and ask *"Prepare purchase orders for anything we need to reorder."*
+   2. A proposal card appears, waiting for approval.
+   3. Sign in as `manager@`, open the **Approval center**, change a quantity, and approve.
+   4. Draft POs are created through the normal purchasing rules, and the original conversation shows the agent's follow-up.
+5. **Audit log** (as admin). Filter by *AI-assisted* to see proposal → approval → execution.
+6. **Order to cash.** Create, confirm, ship and invoice a sales order, then record a payment.
+7. **Roles.** As `sales@`, ask the Copilot about invoices; the request is refused. As `finance@`, customers are read-only.
 
 ## Roadmap
 
-The design document's next phases build on this foundation:
-
-- **AI Copilot.** A Python/LangGraph service: natural-language ERP questions over read-only SQL views,
-  order-delay investigation, and inventory-risk purchase recommendations that go through a human approval step
-  before becoming PO drafts. Planned LLM provider: Groq.
-- **RAG** over company policies (for example, the purchasing approval policy) with cited answers.
-- **Audit log** of consequential actions, built on the existing created/updated-by stamps.
-- **Production engineering.** Docker Compose, CI/CD, scheduled jobs (Hangfire) for overdue notices and
-  stock-risk scans, refresh tokens, optimistic concurrency on stock rows, OpenTelemetry.
+- **Service tickets module** (design doc §13), with Copilot summaries of ticket history.
+- **Scheduled jobs** (Hangfire): nightly stock-risk scans and overdue-invoice reminders.
+- **AI evaluation:** an evaluation dataset of questions with expected sources and findings, plus tool-call and
+  retrieval-accuracy metrics in CI.
+- **Hardening:** refresh tokens, optimistic concurrency on stock rows, OpenTelemetry tracing across API and agents,
+  and a deployment stage in CI.
 
 ## Troubleshooting
 
-- **`An Application Control policy has blocked this file`** when running `dotnet ef`, `dotnet run` or `dotnet test`:
-  Windows Smart App Control is blocking the freshly built, unsigned assemblies. Turn it off under
-  *Windows Security → App & browser control → Smart App Control*.
-- **SQL error 26 (`Error Locating Server/Instance`)**: point the connection string at the instance that is
-  actually running. For a default instance that's `Server=localhost`, not `localhost\SQLEXPRESS`.
-- **Login works in curl but not the browser**: the API's CORS policy allows `http://localhost:4200` only.
+- **`An Application Control policy has blocked this file`** when you run `dotnet ef`, `run` or `test`: Windows
+  Smart App Control is blocking the freshly built, unsigned assemblies. Turn it off under *Windows Security →
+  App & browser control*.
+- **SQL error 26:** use the instance that's actually running. A default instance is `Server=localhost`.
+- **Copilot says the model isn't configured:** set `GROQ_API_KEY` in `ai-service/.env` and restart the AI
+  service. Models are configurable with `GROQ_MODEL` and `GROQ_FAST_MODEL`.
+- **Copilot says the AI service isn't available:** start it on port 8001, and check that `INTERNAL_KEY` matches
+  `AiService:InternalKey`.

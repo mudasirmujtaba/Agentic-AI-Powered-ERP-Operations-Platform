@@ -6,6 +6,7 @@ using OpsPilot.Application.Common.Interfaces;
 using OpsPilot.Application.Common.Security;
 using OpsPilot.Infrastructure;
 using OpsPilot.Infrastructure.Identity;
+using OpsPilot.Infrastructure.Persistence;
 using OpsPilot.Infrastructure.Persistence.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +23,7 @@ builder.Services
     .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 builder.Services.AddOpenApi();
+builder.Services.AddHealthChecks();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
@@ -50,9 +52,11 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
+    await scope.ServiceProvider.GetRequiredService<DatabaseInitializer>().InitializeAsync();
     await scope.ServiceProvider.GetRequiredService<IdentitySeeder>().SeedAsync();
 
-    if (app.Environment.IsDevelopment())
+    // Demo data is for development and demo containers only; never on by default in production.
+    if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("Seed:DemoData"))
     {
         await scope.ServiceProvider.GetRequiredService<DemoDataSeeder>().SeedAsync();
     }
@@ -73,5 +77,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHealthChecks("/health").AllowAnonymous();
 
 app.Run();

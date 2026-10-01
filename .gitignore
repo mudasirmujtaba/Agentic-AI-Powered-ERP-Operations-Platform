@@ -22,3 +22,6 @@ ai-service/data/
 **/__pycache__/
 *.pyc
 .pytest_cache/
+
+# Docker Compose secrets
+/.env
