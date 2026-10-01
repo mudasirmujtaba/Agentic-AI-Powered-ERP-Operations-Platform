@@ -57,6 +57,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/audit/pages/audit-log/audit-log').then((m) => m.AuditLog),
       },
       {
+        path: 'automation',
+        loadComponent: () => import('./features/automation/pages/automation/automation').then((m) => m.Automation),
+      },
+      {
         path: 'ai-copilot',
         loadChildren: () => import('./features/ai-copilot/ai-copilot.routes').then((m) => m.AI_COPILOT_ROUTES),
       },

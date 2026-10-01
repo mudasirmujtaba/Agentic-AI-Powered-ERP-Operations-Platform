@@ -1,5 +1,12 @@
 namespace OpsPilot.Domain.Identity;
 
+/// <summary>Non-interactive accounts the platform itself uses.</summary>
+public static class SystemAccounts
+{
+    /// <summary>Identity background jobs act as when calling the AI service. Has no password, so it cannot sign in.</summary>
+    public const string AutomationEmail = "automation@opspilot.local";
+}
+
 public static class Roles
 {
     public const string Administrator = "Administrator";

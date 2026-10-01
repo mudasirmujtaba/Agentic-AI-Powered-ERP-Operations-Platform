@@ -1,4 +1,3 @@
-using System.Text.Json;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using OpsPilot.Application.Ai;
@@ -157,21 +156,4 @@ public class TicketTests : IDisposable
     }
 
     public void Dispose() => _database.Dispose();
-
-    private sealed class FakeAiClient : IAiAgentClient
-    {
-        public TicketSummaryInput? LastSummaryInput { get; private set; }
-
-        public Task<AgentReply> ChatAsync(AgentChatRequest request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
-        public Task<AgentReply> ResumeAsync(AgentResumeRequest request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
-
-        public Task<AiTextReply> SummarizeTicketAsync(TicketSummaryInput input, CancellationToken cancellationToken = default)
-        {
-            LastSummaryInput = input;
-            return Task.FromResult(new AiTextReply($"summary of {input.TicketNumber}", null));
-        }
-
-        public Task<AiTextReply> FindRecurringProblemsAsync(TicketInsightsInput input, CancellationToken cancellationToken = default) =>
-            Task.FromResult(new AiTextReply($"{input.Tickets.Count} tickets", (JsonElement?)null));
-    }
 }

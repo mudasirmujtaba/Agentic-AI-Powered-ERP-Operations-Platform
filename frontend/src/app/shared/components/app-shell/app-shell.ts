@@ -8,6 +8,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { WriteAccess } from '../../../core/auth/roles';
+import { NotificationBell } from '../notification-bell/notification-bell';
 
 interface NavLink {
   label: string;
@@ -32,6 +33,7 @@ const NAV_LINKS: NavLink[] = [
   { label: 'Purchasing', path: '/purchasing' },
   { label: 'Finance', path: '/finance' },
   { label: 'Service Tickets', path: '/tickets' },
+  { label: 'Automation', path: '/automation' },
   { label: 'Audit log', path: '/audit', roles: WriteAccess.auditLog },
 ];
 
@@ -46,6 +48,7 @@ const NAV_LINKS: NavLink[] = [
     MatListModule,
     MatButtonModule,
     MatIconModule,
+    NotificationBell,
   ],
   templateUrl: './app-shell.html',
   styleUrl: './app-shell.css',

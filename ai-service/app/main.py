@@ -13,7 +13,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException
 from langgraph.types import Command
 from pydantic import BaseModel, Field
 
-from app import llm, tickets
+from app import jobs, llm, tickets
 from app.config import get_settings
 from app.context import RequestContext, set_current
 from app.erp import ErpClient, ErpError
@@ -114,6 +114,24 @@ def summarize_ticket(request: tickets.TicketSummaryInput) -> dict:
 @app.post("/tickets/insights", dependencies=[Depends(require_internal_key)])
 def ticket_insights(request: tickets.TicketInsightsInput) -> dict:
     return _one_shot(lambda: tickets.insights(request))
+
+
+class JobRequest(BaseModel):
+    user: User
+    accessToken: str
+
+
+@app.post("/jobs/inventory-scan", dependencies=[Depends(require_internal_key)])
+def inventory_scan(request: JobRequest) -> dict:
+    erp = ErpClient(request.accessToken)
+    set_current(RequestContext(erp=erp, user=request.user.model_dump(), roles=request.user.roles))
+    try:
+        return jobs.inventory_scan()
+    except ErpError as error:
+        log.warning("Inventory scan could not read the ERP: %s (%s)", error, error.detail)
+        raise HTTPException(status_code=502, detail=f"Could not read ERP data: {error.detail}") from error
+    finally:
+        erp.close()
 
 
 def _one_shot(task) -> dict:

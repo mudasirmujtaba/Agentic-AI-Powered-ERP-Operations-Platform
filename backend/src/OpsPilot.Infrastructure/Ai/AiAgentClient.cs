@@ -33,6 +33,9 @@ public class AiAgentClient(HttpClient http, ILogger<AiAgentClient> logger) : IAi
     public Task<AiTextReply> FindRecurringProblemsAsync(TicketInsightsInput input, CancellationToken cancellationToken = default) =>
         PostAsync<TicketInsightsInput, AiTextReply>("tickets/insights", input, cancellationToken);
 
+    public Task<InventoryScanReply> ScanInventoryAsync(AgentJobRequest request, CancellationToken cancellationToken = default) =>
+        PostAsync<AgentJobRequest, InventoryScanReply>("jobs/inventory-scan", request, cancellationToken);
+
     private async Task<TResponse> PostAsync<TRequest, TResponse>(string path, TRequest body, CancellationToken cancellationToken)
     {
         HttpResponseMessage response;

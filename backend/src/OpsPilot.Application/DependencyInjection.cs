@@ -7,6 +7,8 @@ using OpsPilot.Application.Customers;
 using OpsPilot.Application.Dashboard;
 using OpsPilot.Application.Finance;
 using OpsPilot.Application.Inventory;
+using OpsPilot.Application.Jobs;
+using OpsPilot.Application.Notifications;
 using OpsPilot.Application.Purchasing;
 using OpsPilot.Application.Sales;
 using OpsPilot.Application.Service;
@@ -37,6 +39,12 @@ public static class DependencyInjection
         services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddScoped<IAiCopilotService, AiCopilotService>();
         services.AddScoped<ITicketService, TicketService>();
+        services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<NotificationPublisher>();
+        services.AddScoped<IInsightService, InsightService>();
+        services.AddScoped<InventoryRiskScanJob>();
+        services.AddScoped<OverdueInvoiceReminderJob>();
+        services.AddScoped<CreditHoldReviewJob>();
 
         return services;
     }

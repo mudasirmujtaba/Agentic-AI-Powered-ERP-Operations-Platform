@@ -27,7 +27,11 @@ public static class DependencyInjection
             options
                 .UseSqlServer(
                     configuration.GetConnectionString("DefaultConnection"),
-                    sql => sql.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName))
+                    sql => sql
+                        .MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)
+                        // Retry transient failures (timeouts, dropped connections, failovers). Safe because the
+                        // app uses no user-initiated transactions; SaveChanges is the unit of work.
+                        .EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(5), errorNumbersToAdd: null))
                 .AddInterceptors(serviceProvider.GetRequiredService<AuditableEntityInterceptor>()));
 
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
@@ -72,6 +76,8 @@ public static class DependencyInjection
         services.AddScoped<DemoDataSeeder>();
         services.AddScoped<DatabaseInitializer>();
 
+        services.AddScoped<ISystemPrincipal, SystemPrincipal>();
+        services.AddScoped<IUserDirectory, UserDirectory>();
         services.AddScoped<IAiSqlGateway, AiSqlGateway>();
         var aiOptions = configuration.GetSection(AiServiceOptions.SectionName).Get<AiServiceOptions>() ?? new AiServiceOptions();
         services.AddHttpClient<IAiAgentClient, AiAgentClient>(client =>

@@ -5,7 +5,9 @@ using OpsPilot.Domain.Catalog;
 using OpsPilot.Domain.Customers;
 using OpsPilot.Domain.Finance;
 using OpsPilot.Domain.Identity;
+using OpsPilot.Domain.Insights;
 using OpsPilot.Domain.Inventory;
+using OpsPilot.Domain.Notifications;
 using OpsPilot.Domain.Purchasing;
 using OpsPilot.Domain.Sales;
 using OpsPilot.Domain.Service;
@@ -29,6 +31,8 @@ public interface IApplicationDbContext
     DbSet<AiConversation> AiConversations { get; }
     DbSet<AiAction> AiActions { get; }
     DbSet<ServiceTicket> ServiceTickets { get; }
+    DbSet<Notification> Notifications { get; }
+    DbSet<InsightReport> InsightReports { get; }
 
     /// <summary>Identity users, read-only use: assignee lookups. Account changes go through Identity's UserManager.</summary>
     DbSet<ApplicationUser> Users { get; }

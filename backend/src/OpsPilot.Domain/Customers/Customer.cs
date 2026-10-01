@@ -13,6 +13,10 @@ public class Customer : BaseEntity
     public int PaymentTermsDays { get; set; } = 30;
     public CustomerStatus Status { get; set; } = CustomerStatus.Active;
 
+    /// <summary>True when the hold was placed by the credit policy (invoice over 60 days overdue), so the policy may
+    /// lift it once the account is current. Manual holds are never released automatically.</summary>
+    public bool OnPolicyCreditHold { get; set; }
+
     public ICollection<CustomerAddress> Addresses { get; set; } = new List<CustomerAddress>();
 }
 

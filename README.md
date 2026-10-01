@@ -24,6 +24,8 @@ and drafts purchase orders that a person must approve before anything is created
 | **Service tickets** | Customer tickets with priority, category, assignee, an optional order and product, a comment thread with internal notes, and Open → In progress → Waiting on customer → Resolved → Closed (with reopen). Resolving requires a resolution. **AI summaries** of a ticket's history, and **AI recurring-problem analysis** across recent tickets. |
 | **AI Copilot** | Chat over your ERP data, with data tables, cited policy answers, and a step-by-step trace of how each answer was produced. |
 | **Approval center** | Every AI-proposed operation in one place: approve, reject, or modify quantities before approving. |
+| **Automation** | Scheduled jobs (Hangfire): a **nightly inventory risk scan** at 02:00 that runs the Inventory agent as a restricted automation account and stores an AI-written briefing; **payment reminders** at 7, 14 and 30 days overdue; and **credit holds** for invoices over 60 days overdue, released once the account is current (manual holds are never touched). Admins and managers can see job history and run jobs on demand. |
+| **Notifications** | An in-app bell with role-targeted alerts from the jobs (stock risk to inventory, reminders and holds to finance and sales), linking to the relevant page. |
 | **Audit log** | Every consequential action (confirmations, shipments, approvals, payments, stock adjustments, AI proposals and decisions), with who did it and whether AI was involved. |
 
 ### The Copilot's agents
@@ -85,7 +87,10 @@ ai-service/
 
 Other engineering notes:
 - **Stock ledger.** All stock goes through a single `StockLedger`; a check constraint keeps `0 ≤ reserved ≤ on hand`.
-- **Error mapping.** Errors map to 400 (validation), 404, 409 (duplicates) and 422 (business rules).
+- **Error mapping.** Errors map to 400 (validation), 404, 409 (duplicates), 422 (business rules) and 503 (AI service down); client-aborted requests are not logged as server errors.
+- **Dates.** All timestamps are stored and returned as UTC (`...Z`); the UI shows them in the viewer's time zone.
+- **Resilience.** EF Core retries transient SQL failures. Scheduled jobs are idempotent: reminders track the stage sent, and holds record whether policy placed them.
+- **Job security.** Jobs that call the AI service use a short-lived token for `automation@opspilot.local`, which has no password and only the InventoryManager role, so agents read the ERP under normal role checks. Hangfire's own dashboard (`/hangfire`) is local-only in Development.
 - **Secrets.** Secrets never live in the repository: they're in .NET user secrets locally and in a gitignored `.env` for the AI service and Docker.
 
 ## Running locally
@@ -147,8 +152,8 @@ Compose runs four containers:
 
 | Suite | Command | Count |
 |---|---|---|
-| Backend | `dotnet test` in `backend/` | 51 |
-| AI service | `uv run pytest` in `ai-service/` | 23 |
+| Backend | `dotnet test` in `backend/` | 56 |
+| AI service | `uv run pytest` in `ai-service/` | 25 |
 | Frontend | `npx ng test --watch=false` in `frontend/` | 15 |
 | AI evaluation | `uv run python -m evals.run` in `ai-service/` (needs the API, AI service and `OPSPILOT_PASSWORD`) | 12 cases |
 
@@ -187,14 +192,16 @@ All accounts use the password you set in `Seed:AdminPassword`.
    3. Sign in as `manager@`, open the **Approval center**, change a quantity, and approve.
    4. Draft POs are created through the normal purchasing rules, and the original conversation shows the agent's follow-up.
 5. **Audit log** (as admin). Filter by *AI-assisted* to see proposal → approval → execution.
-6. **Service tickets.** Open *Service Tickets*, click *Find recurring problems* (the AI groups the X200 seal
+6. **Automation** (as manager). Open *Automation*, click *Run now* on the inventory risk scan, and see the AI
+   briefing, the bell notification, and the reminders and credit holds the other jobs produce.
+7. **Service tickets.** Open *Service Tickets*, click *Find recurring problems* (the AI groups the X200 seal
    leaks, late deliveries and duplicate invoices), then open TCK-50003 and click *Summarise*.
-7. **Order to cash.** Create, confirm, ship and invoice a sales order, then record a payment.
-8. **Roles.** As `sales@`, ask the Copilot about invoices; the request is refused. As `finance@`, customers are read-only.
+8. **Order to cash.** Create, confirm, ship and invoice a sales order, then record a payment.
+9. **Roles.** As `sales@`, ask the Copilot about invoices; the request is refused. As `finance@`, customers are read-only.
 
 ## Roadmap
 
-- **Scheduled jobs** (Hangfire): nightly stock-risk scans and overdue-invoice reminders.
+- **Email delivery** for payment reminders (they are recorded and notified in-app today).
 - **AI evaluation in CI:** run the evaluation set on a schedule against a staging stack.
 - **Hardening:** refresh tokens, optimistic concurrency on stock rows, OpenTelemetry tracing across API and agents,
   and a deployment stage in CI.

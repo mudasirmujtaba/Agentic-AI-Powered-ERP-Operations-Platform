@@ -9,6 +9,7 @@ using OpsPilot.Application.Common.Models;
 using OpsPilot.Domain.Audit;
 using OpsPilot.Domain.Common;
 using OpsPilot.Domain.Customers;
+using OpsPilot.Domain.Identity;
 using OpsPilot.Domain.Service;
 
 namespace OpsPilot.Application.Service;
@@ -181,7 +182,7 @@ public class TicketService(
     public async Task<IReadOnlyList<TicketAssigneeDto>> ListAssigneesAsync(CancellationToken cancellationToken = default)
     {
         var users = await db.Users.AsNoTracking()
-            .Where(u => u.IsActive)
+            .Where(u => u.IsActive && u.Email != SystemAccounts.AutomationEmail)
             .Select(u => new { u.Id, u.FirstName, u.LastName, u.Email })
             .ToListAsync(cancellationToken);
 

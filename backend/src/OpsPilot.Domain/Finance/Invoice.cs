@@ -27,6 +27,22 @@ public class Invoice : BaseEntity
 
     public bool IsOverdue(DateTime nowUtc) => IsOutstanding && DueDateUtc < nowUtc.Date;
 
+    /// <summary>Whole days past the due date (0 when not overdue).</summary>
+    public int DaysOverdue(DateTime nowUtc) =>
+        IsOverdue(nowUtc) && DueDateUtc is { } due ? (nowUtc.Date - due.Date).Days : 0;
+
+    /// <summary>Highest overdue-reminder stage already sent (0, 7, 14 or 30 days), so reminders are never repeated.</summary>
+    public int ReminderStage { get; private set; }
+
+    public void MarkReminderSent(int stage)
+    {
+        if (stage <= ReminderStage)
+        {
+            throw new BusinessRuleException($"Reminder stage {stage} was already sent for {InvoiceNumber}.");
+        }
+        ReminderStage = stage;
+    }
+
     public static Invoice FromOrder(SalesOrder order, string invoiceNumber)
     {
         if (order.Status is not (SalesOrderStatus.Shipped or SalesOrderStatus.Delivered))

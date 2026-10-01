@@ -1,11 +1,16 @@
 using System.Text.Json.Serialization;
+using Hangfire;
+using Hangfire.SqlServer;
+using Microsoft.Data.SqlClient;
 using OpsPilot.Api.Infrastructure;
 using OpsPilot.Api.Services;
 using OpsPilot.Application;
 using OpsPilot.Application.Common.Interfaces;
 using OpsPilot.Application.Common.Security;
+using OpsPilot.Application.Jobs;
 using OpsPilot.Infrastructure;
 using OpsPilot.Infrastructure.Identity;
+using OpsPilot.Infrastructure.Jobs;
 using OpsPilot.Infrastructure.Persistence;
 using OpsPilot.Infrastructure.Persistence.Seed;
 
@@ -30,6 +35,26 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Background jobs (design doc §40): Hangfire on the application database, in its own schema.
+var jobsEnabled = builder.Configuration.GetValue("Jobs:Enabled", true);
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddHangfire(config => config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(() => new SqlConnection(connectionString), new SqlServerStorageOptions
+    {
+        SchemaName = "hangfire",
+        PrepareSchemaIfNecessary = true,
+        QueuePollInterval = TimeSpan.FromSeconds(15),
+    }));
+if (jobsEnabled)
+{
+    // Few, short jobs: two workers are plenty and keep the footprint small.
+    builder.Services.AddHangfireServer(options => options.WorkerCount = 2);
+}
+builder.Services.AddScoped<IJobScheduler, HangfireJobScheduler>();
 
 var authorization = builder.Services.AddAuthorizationBuilder();
 foreach (var (policy, roles) in Policies.RolesByPolicy)
@@ -62,11 +87,19 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+if (jobsEnabled)
+{
+    HangfireJobScheduler.RegisterRecurringJobs(app.Services.GetRequiredService<IRecurringJobManager>(), TimeZoneInfo.Local);
+}
+
 app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    // Hangfire's own dashboard, for local debugging only (local requests, no JWT). The app's Automation page
+    // (/api/jobs) is the role-checked surface.
+    app.UseHangfireDashboard("/hangfire");
 }
 
 app.UseHttpsRedirection();

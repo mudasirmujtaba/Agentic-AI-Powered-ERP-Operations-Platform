@@ -110,6 +110,8 @@ public class CustomerService(IApplicationDbContext db, IValidator<SaveCustomerRe
         customer.CreditLimit = request.CreditLimit;
         customer.PaymentTermsDays = request.PaymentTermsDays;
         customer.Status = request.Status;
+        // A manual status change takes ownership of the hold away from the credit policy.
+        if (request.Status != CustomerStatus.OnHold) customer.OnPolicyCreditHold = false;
 
         // Addresses are value-like children, so the submitted set replaces the stored one;
         // EF deletes the removed rows as orphans of the required relationship.

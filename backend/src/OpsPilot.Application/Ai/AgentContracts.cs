@@ -11,7 +11,29 @@ public interface IAiAgentClient
     /// <summary>One-shot text tasks over data the ERP has already authorised and passes in (no agent tools, no checkpoint).</summary>
     Task<AiTextReply> SummarizeTicketAsync(TicketSummaryInput input, CancellationToken cancellationToken = default);
     Task<AiTextReply> FindRecurringProblemsAsync(TicketInsightsInput input, CancellationToken cancellationToken = default);
+
+    /// <summary>Scheduled inventory analysis (design doc §40), run as the system principal.</summary>
+    Task<InventoryScanReply> ScanInventoryAsync(AgentJobRequest request, CancellationToken cancellationToken = default);
 }
+
+public record AgentJobRequest(AgentUser User, string AccessToken);
+
+public record InventoryRiskItem(
+    string Product,
+    string Name,
+    string Risk,
+    int Available,
+    int SafetyStock,
+    int ReorderPoint,
+    double? DaysOfCover,
+    string? StockoutDate,
+    int Incoming,
+    string? NextDelivery,
+    int LeadTimeDays,
+    int RecommendedQuantity);
+
+/// <param name="AiGenerated">False when the model was unavailable and <paramref name="Content"/> is a plain digest.</param>
+public record InventoryScanReply(string Content, bool AiGenerated, int ProductsAnalysed, IReadOnlyList<InventoryRiskItem> Risks, JsonElement? Metadata);
 
 public record AiTextReply(string Content, JsonElement? Metadata);
 

@@ -1,0 +1,123 @@
+<app-page-header title="Automation" subtitle="Scheduled analysis and policy jobs, and what they found" />
+
+@if (error(); as message) {
+  <p class="mb-4 rounded-md bg-red-50 p-3 text-red-800" role="alert">{{ message }}</p>
+}
+
+<!-- The nightly inventory briefing (design doc §40). -->
+<section class="mb-6 rounded-lg border border-gray-200 p-4" aria-labelledby="briefing-title">
+  <div class="mb-3 flex flex-wrap items-center gap-2">
+    <mat-icon class="text-indigo-700">auto_awesome</mat-icon>
+    <h2 id="briefing-title" class="m-0 flex-1 text-lg font-medium">Inventory risk briefing</h2>
+    @if (report(); as r) {
+      <span class="text-sm opacity-70">{{ r.generatedAtUtc | date: 'medium' }}</span>
+      <app-status-badge [label]="r.aiGenerated ? 'AI-written' : 'Digest'" [tone]="r.aiGenerated ? 'warning' : 'neutral'" />
+    }
+  </div>
+
+  @if (reportLoading()) {
+    <mat-progress-bar mode="indeterminate" />
+  } @else if (report(); as r) {
+    <div class="answer text-sm leading-relaxed" [innerHTML]="r.summary | markdownLite"></div>
+
+    @if (r.items.length) {
+      <div class="mt-4 overflow-x-auto rounded-lg border border-gray-200">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-gray-200 text-left">
+              <th class="p-2 font-medium">Product</th>
+              <th class="p-2 font-medium">Risk</th>
+              <th class="p-2 text-right font-medium">Available / safety</th>
+              <th class="p-2 text-right font-medium">Days of cover</th>
+              <th class="p-2 font-medium">Stockout</th>
+              <th class="p-2 font-medium">Incoming</th>
+              <th class="p-2 text-right font-medium">Lead time</th>
+              <th class="p-2 text-right font-medium">Recommend</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of r.items; track item.product) {
+              <tr class="border-b border-gray-100">
+                <td class="p-2"><span class="font-mono">{{ item.product }}</span><span class="ml-2 opacity-70">{{ item.name }}</span></td>
+                <td class="p-2"><app-status-badge [label]="item.risk" [tone]="riskTone(item.risk)" /></td>
+                <td class="whitespace-nowrap p-2 text-right">{{ item.available }} / {{ item.safetyStock }}</td>
+                <td class="p-2 text-right">{{ item.daysOfCover ?? '—' }}</td>
+                <td class="whitespace-nowrap p-2">{{ (item.stockoutDate | date: 'mediumDate') ?? '—' }}</td>
+                <td class="whitespace-nowrap p-2">
+                  @if (item.incoming) {
+                    {{ item.incoming }} · {{ item.nextDelivery | date: 'mediumDate' }}
+                  } @else {
+                    <span class="opacity-60">Nothing on order</span>
+                  }
+                </td>
+                <td class="p-2 text-right">{{ item.leadTimeDays }} d</td>
+                <td class="p-2 text-right font-medium">{{ item.recommendedQuantity || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    <p class="m-0 mt-2 text-xs opacity-60">
+      Figures are computed from stock, 90-day sales, open purchase orders and supplier lead times; the narrative is
+      written from them. To act on it, ask the Copilot to prepare purchase orders.
+    </p>
+  } @else {
+    <p class="m-0 text-sm opacity-70">The first scan runs tonight at 02:00{{ canManageJobs() ? ', or run it now below' : '' }}.</p>
+  }
+</section>
+
+@if (canManageJobs()) {
+  <section aria-labelledby="jobs-title">
+    <h2 id="jobs-title" class="mb-2 mt-0 text-lg font-medium">Scheduled jobs</h2>
+    <div class="overflow-x-auto rounded-lg border border-gray-200">
+      <table class="w-full border-collapse text-sm">
+        <thead>
+          <tr class="border-b border-gray-200 text-left">
+            <th class="p-3 font-medium">Job</th>
+            <th class="p-3 font-medium">Schedule</th>
+            <th class="p-3 font-medium">Last run</th>
+            <th class="p-3 font-medium">Next run</th>
+            <th class="p-3"><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (job of jobs(); track job.id) {
+            <tr class="border-b border-gray-100 align-top">
+              <td class="p-3">
+                <div class="font-medium">{{ job.name }}</div>
+                <div class="max-w-md text-xs opacity-70">{{ job.description }}</div>
+              </td>
+              <td class="whitespace-nowrap p-3">{{ job.schedule }}</td>
+              <td class="p-3">
+                @if (job.lastRunUtc) {
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="whitespace-nowrap">{{ job.lastRunUtc | date: 'short' }}</span>
+                    @if (job.lastState) {
+                      <app-status-badge [label]="job.lastState" [tone]="stateTone(job.lastState)" />
+                    }
+                  </div>
+                  @if (job.lastResult) {
+                    <div class="mt-1 text-xs opacity-70">{{ job.lastResult }}</div>
+                  }
+                } @else {
+                  <span class="opacity-60">Never</span>
+                }
+              </td>
+              <td class="whitespace-nowrap p-3">{{ (job.nextRunUtc | date: 'short') ?? '—' }}</td>
+              <td class="p-3 text-right">
+                <button mat-stroked-button (click)="run(job)" [disabled]="running().has(job.id)">
+                  @if (running().has(job.id)) {
+                    Running…
+                  } @else {
+                    <ng-container><mat-icon>play_arrow</mat-icon> Run now</ng-container>
+                  }
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}

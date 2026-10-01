@@ -16,6 +16,7 @@
       @if (authService.currentUser(); as user) {
         <span class="user-email">{{ user.email }}</span>
       }
+      <app-notification-bell />
       <button mat-icon-button (click)="logout()" aria-label="Log out">
         <mat-icon>logout</mat-icon>
       </button>
