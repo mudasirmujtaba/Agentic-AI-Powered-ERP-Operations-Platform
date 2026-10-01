@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace OpsPilot.Infrastructure.Migrations
+namespace OpsPilot.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
     public partial class InitialIdentitySchema : Migration

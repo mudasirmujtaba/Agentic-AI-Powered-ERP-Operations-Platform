@@ -1,0 +1,72 @@
+<app-page-header title="Suppliers" subtitle="Vendors, contacts and lead times">
+  <button *appHasRole="writeAccess" mat-flat-button routerLink="/suppliers/new">
+    <mat-icon>add</mat-icon>
+    New supplier
+  </button>
+</app-page-header>
+
+<mat-form-field appearance="outline" class="w-full max-w-sm" subscriptSizing="dynamic">
+  <mat-label>Search</mat-label>
+  <mat-icon matPrefix>search</mat-icon>
+  <input matInput placeholder="Code or name" (input)="list.onSearch($any($event.target).value)" />
+</mat-form-field>
+
+<div class="mt-4 overflow-x-auto rounded-lg border border-gray-200">
+  @if (list.loading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (list.error(); as error) {
+    <p class="m-0 p-4 text-red-700">{{ error }}</p>
+  }
+
+  <table mat-table [dataSource]="list.items()" matSort matSortActive="name" matSortDirection="asc" (matSortChange)="list.onSort($event)" class="w-full">
+    <ng-container matColumnDef="code">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Code</th>
+      <td mat-cell *matCellDef="let s" class="font-mono">{{ s.code }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+      <td mat-cell *matCellDef="let s">{{ s.name }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="contactName">
+      <th mat-header-cell *matHeaderCellDef>Contact</th>
+      <td mat-cell *matCellDef="let s">{{ s.contactName }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="email">
+      <th mat-header-cell *matHeaderCellDef>Email</th>
+      <td mat-cell *matCellDef="let s">{{ s.email }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="averageLeadTimeDays">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-right">Avg. lead time</th>
+      <td mat-cell *matCellDef="let s" class="text-right">{{ s.averageLeadTimeDays }} days</td>
+    </ng-container>
+
+    <ng-container matColumnDef="isActive">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+      <td mat-cell *matCellDef="let s">
+        <app-status-badge [label]="s.isActive ? 'Active' : 'Inactive'" [tone]="s.isActive ? 'success' : 'neutral'" />
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="columns"></tr>
+    <tr mat-row *matRowDef="let row; columns: columns" (click)="open(row)" class="cursor-pointer hover:bg-gray-50"></tr>
+    <tr class="mat-row" *matNoDataRow>
+      <td class="p-4 text-center opacity-70" [attr.colspan]="columns.length">
+        {{ list.loading() ? 'Loading…' : 'No suppliers match your search.' }}
+      </td>
+    </tr>
+  </table>
+
+  <mat-paginator
+    [length]="list.totalCount()"
+    [pageIndex]="list.query().page - 1"
+    [pageSize]="list.query().pageSize"
+    [pageSizeOptions]="[10, 20, 50]"
+    (page)="list.onPage($event)"
+  />
+</div>

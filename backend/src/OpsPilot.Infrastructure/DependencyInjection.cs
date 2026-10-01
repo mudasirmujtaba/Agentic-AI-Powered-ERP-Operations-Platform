@@ -6,9 +6,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using OpsPilot.Application.Auth;
+using OpsPilot.Application.Common.Interfaces;
 using OpsPilot.Domain.Identity;
 using OpsPilot.Infrastructure.Identity;
 using OpsPilot.Infrastructure.Persistence;
+using OpsPilot.Infrastructure.Persistence.Interceptors;
+using OpsPilot.Infrastructure.Persistence.Seed;
 
 namespace OpsPilot.Infrastructure;
 
@@ -16,10 +19,16 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(
-                configuration.GetConnectionString("DefaultConnection"),
-                sql => sql.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+        services.AddScoped<AuditableEntityInterceptor>();
+
+        services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
+            options
+                .UseSqlServer(
+                    configuration.GetConnectionString("DefaultConnection"),
+                    sql => sql.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName))
+                .AddInterceptors(serviceProvider.GetRequiredService<AuditableEntityInterceptor>()));
+
+        services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
         services.AddHttpContextAccessor();
 
@@ -55,11 +64,10 @@ public static class DependencyInjection
                 };
             });
 
-        services.AddAuthorization();
-
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IdentitySeeder>();
+        services.AddScoped<DemoDataSeeder>();
 
         return services;
     }

@@ -11,6 +11,8 @@ import { AuthService } from '../../../core/auth/auth.service';
 interface NavLink {
   label: string;
   path: string;
+  /** Sub-page of the link above it; rendered indented. */
+  child?: boolean;
 }
 
 @Component({
@@ -34,7 +36,9 @@ export class AppShell {
     { label: 'Customers', path: '/customers' },
     { label: 'Suppliers', path: '/suppliers' },
     { label: 'Products', path: '/products' },
+    { label: 'Categories', path: '/products/categories', child: true },
     { label: 'Inventory', path: '/inventory' },
+    { label: 'Warehouses', path: '/inventory/warehouses', child: true },
     { label: 'Sales', path: '/sales' },
     { label: 'Purchasing', path: '/purchasing' },
     { label: 'Finance', path: '/finance' },

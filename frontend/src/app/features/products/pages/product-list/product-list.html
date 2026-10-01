@@ -1,0 +1,98 @@
+<app-page-header title="Products" subtitle="Catalog, pricing and reorder thresholds">
+  <a mat-button routerLink="/products/categories">
+    <mat-icon>category</mat-icon>
+    Categories
+  </a>
+  <button *appHasRole="writeAccess" mat-flat-button routerLink="/products/new">
+    <mat-icon>add</mat-icon>
+    New product
+  </button>
+</app-page-header>
+
+<div class="flex flex-wrap gap-4">
+  <mat-form-field appearance="outline" class="w-full max-w-sm" subscriptSizing="dynamic">
+    <mat-label>Search</mat-label>
+    <mat-icon matPrefix>search</mat-icon>
+    <input matInput placeholder="Code or name" (input)="list.onSearch($any($event.target).value)" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-64" subscriptSizing="dynamic">
+    <mat-label>Category</mat-label>
+    <mat-select (selectionChange)="filterByCategory($event.value)">
+      <mat-option [value]="undefined">All categories</mat-option>
+      @for (category of categories(); track category.id) {
+        <mat-option [value]="category.id">{{ category.name }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</div>
+
+<div class="mt-4 overflow-x-auto rounded-lg border border-gray-200">
+  @if (list.loading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (list.error(); as error) {
+    <p class="m-0 p-4 text-red-700">{{ error }}</p>
+  }
+
+  <table mat-table [dataSource]="list.items()" matSort matSortActive="code" matSortDirection="asc" (matSortChange)="list.onSort($event)" class="w-full">
+    <ng-container matColumnDef="code">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Code</th>
+      <td mat-cell *matCellDef="let p" class="font-mono">{{ p.code }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+      <td mat-cell *matCellDef="let p">{{ p.name }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="categoryName">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
+      <td mat-cell *matCellDef="let p">{{ p.categoryName }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="unitPrice">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-right">Unit price</th>
+      <td mat-cell *matCellDef="let p" class="text-right">{{ p.unitPrice | currency: 'USD' }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="reorderPoint">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-right">Reorder point</th>
+      <td mat-cell *matCellDef="let p" class="text-right">{{ p.reorderPoint }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="safetyStock">
+      <th mat-header-cell *matHeaderCellDef class="text-right">Safety stock</th>
+      <td mat-cell *matCellDef="let p" class="text-right">{{ p.safetyStock }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="primarySupplierName">
+      <th mat-header-cell *matHeaderCellDef>Primary supplier</th>
+      <td mat-cell *matCellDef="let p">{{ p.primarySupplierName ?? '—' }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="isActive">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+      <td mat-cell *matCellDef="let p">
+        <app-status-badge [label]="p.isActive ? 'Active' : 'Inactive'" [tone]="p.isActive ? 'success' : 'neutral'" />
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="columns"></tr>
+    <tr mat-row *matRowDef="let row; columns: columns" (click)="open(row)" class="cursor-pointer hover:bg-gray-50"></tr>
+    <tr class="mat-row" *matNoDataRow>
+      <td class="p-4 text-center opacity-70" [attr.colspan]="columns.length">
+        {{ list.loading() ? 'Loading…' : 'No products match your filters.' }}
+      </td>
+    </tr>
+  </table>
+
+  <mat-paginator
+    [length]="list.totalCount()"
+    [pageIndex]="list.query().page - 1"
+    [pageSize]="list.query().pageSize"
+    [pageSizeOptions]="[10, 20, 50]"
+    (page)="list.onPage($event)"
+  />
+</div>

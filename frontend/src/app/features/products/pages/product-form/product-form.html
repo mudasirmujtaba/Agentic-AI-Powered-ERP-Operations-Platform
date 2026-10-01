@@ -1,0 +1,102 @@
+<app-page-header [title]="title()" [subtitle]="isNew() ? 'Add a product to the catalog' : 'Product details'">
+  <a mat-button routerLink="/products">
+    <mat-icon>arrow_back</mat-icon>
+    Back to products
+  </a>
+</app-page-header>
+
+@if (loading()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+@if (formError(); as error) {
+  <p class="mb-4 rounded-md bg-red-50 p-3 text-red-800">{{ error }}</p>
+}
+
+@if (!canEdit()) {
+  <p class="mb-4 rounded-md bg-gray-100 p-3 text-sm">You have read-only access to the catalog.</p>
+}
+
+<form [formGroup]="form" (ngSubmit)="save()" class="max-w-4xl">
+  <section class="grid grid-cols-1 gap-x-4 md:grid-cols-2">
+    <mat-form-field appearance="outline">
+      <mat-label>Code</mat-label>
+      <input matInput formControlName="code" placeholder="X400" />
+      <mat-error>{{ firstError(form.controls.code) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="name" />
+      <mat-error>{{ firstError(form.controls.name) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Category</mat-label>
+      <mat-select formControlName="categoryId">
+        @for (category of categories(); track category.id) {
+          <mat-option [value]="category.id">{{ category.name }}</mat-option>
+        }
+      </mat-select>
+      <mat-error>{{ firstError(form.controls.categoryId) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Primary supplier</mat-label>
+      <mat-select formControlName="primarySupplierId">
+        <mat-option [value]="null">None</mat-option>
+        @for (supplier of suppliers(); track supplier.id) {
+          <mat-option [value]="supplier.id">{{ supplier.name }}</mat-option>
+        }
+      </mat-select>
+      <mat-error>{{ firstError(form.controls.primarySupplierId) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="md:col-span-2">
+      <mat-label>Description</mat-label>
+      <textarea matInput rows="3" formControlName="description"></textarea>
+      <mat-error>{{ firstError(form.controls.description) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Unit price (USD)</mat-label>
+      <input matInput type="number" min="0" step="0.01" formControlName="unitPrice" />
+      <mat-error>{{ firstError(form.controls.unitPrice) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Cost (USD)</mat-label>
+      <input matInput type="number" min="0" step="0.01" formControlName="cost" />
+      <mat-error>{{ firstError(form.controls.cost) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Reorder point</mat-label>
+      <input matInput type="number" min="0" formControlName="reorderPoint" />
+      <mat-hint>Reorder when stock falls to this level</mat-hint>
+      <mat-error>{{ firstError(form.controls.reorderPoint) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Safety stock</mat-label>
+      <input matInput type="number" min="0" formControlName="safetyStock" />
+      <mat-hint>Minimum buffer; can't exceed the reorder point</mat-hint>
+      <mat-error>{{ firstError(form.controls.safetyStock) }}</mat-error>
+    </mat-form-field>
+  </section>
+
+  @if (form.hasError('safetyStockExceedsReorderPoint')) {
+    <p class="mt-0 text-sm text-red-700">Safety stock cannot exceed the reorder point.</p>
+  }
+
+  <mat-slide-toggle formControlName="isActive">Active product</mat-slide-toggle>
+
+  @if (canEdit()) {
+    <div class="mt-6 flex gap-2">
+      <button mat-flat-button type="submit" [disabled]="saving() || loading()">
+        {{ saving() ? 'Saving…' : 'Save product' }}
+      </button>
+      <a mat-button routerLink="/products">Cancel</a>
+    </div>
+  }
+</form>

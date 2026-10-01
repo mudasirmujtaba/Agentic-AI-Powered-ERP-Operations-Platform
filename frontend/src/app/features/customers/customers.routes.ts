@@ -1,7 +1,16 @@
 import { Routes } from '@angular/router';
 
-import { FeaturePlaceholder } from '../../shared/components/feature-placeholder/feature-placeholder';
-
 export const CUSTOMERS_ROUTES: Routes = [
-  { path: '', component: FeaturePlaceholder, data: { title: 'Customers' } },
+  {
+    path: '',
+    loadComponent: () => import('./pages/customer-list/customer-list').then((m) => m.CustomerList),
+  },
+  {
+    path: 'new',
+    loadComponent: () => import('./pages/customer-form/customer-form').then((m) => m.CustomerForm),
+  },
+  {
+    path: ':id',
+    loadComponent: () => import('./pages/customer-form/customer-form').then((m) => m.CustomerForm),
+  },
 ];

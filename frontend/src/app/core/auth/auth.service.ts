@@ -27,6 +27,12 @@ export class AuthService {
     );
   }
 
+  /** Signal-aware: reading it inside a template, `computed` or `effect` re-evaluates when the user changes. */
+  hasAnyRole(roles: readonly string[]): boolean {
+    const user = this.currentUserSignal();
+    return !!user && roles.some((role) => user.roles.includes(role));
+  }
+
   logout(): void {
     this.tokenStorage.clearToken();
     this.currentUserSignal.set(null);

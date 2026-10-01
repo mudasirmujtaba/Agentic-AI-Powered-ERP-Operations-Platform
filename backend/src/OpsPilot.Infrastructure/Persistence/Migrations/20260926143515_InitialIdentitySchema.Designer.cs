@@ -9,7 +9,7 @@ using OpsPilot.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace OpsPilot.Infrastructure.Migrations
+namespace OpsPilot.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20260926143515_InitialIdentitySchema")]
