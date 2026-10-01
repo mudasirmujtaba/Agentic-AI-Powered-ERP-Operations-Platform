@@ -37,7 +37,8 @@ public class AuditableEntityInterceptor(ICurrentUserService currentUser) : SaveC
         {
             if (entry.State == EntityState.Added)
             {
-                entry.Entity.CreatedAtUtc = now;
+                // An explicit value (demo data backdating history) is kept; otherwise stamp now.
+                if (entry.Entity.CreatedAtUtc == default) entry.Entity.CreatedAtUtc = now;
                 entry.Entity.CreatedBy = userId;
             }
             else if (entry.State == EntityState.Modified ||

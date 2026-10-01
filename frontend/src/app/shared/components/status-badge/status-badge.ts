@@ -11,7 +11,7 @@ const toneClasses: Record<BadgeTone, string> = {
 
 @Component({
   selector: 'app-status-badge',
-  template: `<span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium" [class]="classes()">{{ label() }}</span>`,
+  template: `<span class="inline-flex whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium" [class]="classes()">{{ label() }}</span>`,
 })
 export class StatusBadge {
   readonly label = input.required<string>();

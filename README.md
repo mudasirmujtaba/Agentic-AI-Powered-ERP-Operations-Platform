@@ -21,6 +21,7 @@ and drafts purchase orders that a person must approve before anything is created
 | **Sales orders** | Draft → Confirmed → Processing → Shipped → Delivered (or Cancelled). Confirming checks the customer's status and **credit limit** and **reserves stock**. Shipping deducts it; cancelling releases it. |
 | **Purchase orders** | Draft → Pending approval → Approved → Ordered → Partially received → Completed. Orders over **$10,000 need a manager's approval**. Receiving goods posts stock. |
 | **Invoicing** | Invoice a shipped order, issue it (the due date comes from payment terms), and record full or partial payments. Overdue status is computed. |
+| **Service tickets** | Customer tickets with priority, category, assignee, an optional order and product, a comment thread with internal notes, and Open → In progress → Waiting on customer → Resolved → Closed (with reopen). Resolving requires a resolution. **AI summaries** of a ticket's history, and **AI recurring-problem analysis** across recent tickets. |
 | **AI Copilot** | Chat over your ERP data, with data tables, cited policy answers, and a step-by-step trace of how each answer was produced. |
 | **Approval center** | Every AI-proposed operation in one place: approve, reject, or modify quantities before approving. |
 | **Audit log** | Every consequential action (confirmations, shipments, approvals, payments, stock adjustments, AI proposals and decisions), with who did it and whether AI was involved. |
@@ -75,6 +76,8 @@ backend/
   tests/OpsPilot.UnitTests     xUnit against SQLite in-memory, plus SQL validator tests
 ai-service/
   app/agents/    Router, ERP Query, Order Investigation, Inventory, Procurement, Policy, General
+  app/tickets.py Ticket summaries and recurring-problem analysis
+  evals/         Evaluation dataset and runner
   app/graph.py   LangGraph: intent → workflow → (approval interrupt → outcome)
   knowledge/     Policy documents indexed for RAG (local fastembed embeddings)
   tests/         pytest: risk maths, proposals, findings, routing, retrieval, interrupt/resume
@@ -114,7 +117,8 @@ dotnet run --project src/OpsPilot.Api --launch-profile https -- --Database:Ensur
 ```
 
 In Development the API seeds demo data on first start: 20 products, 15 customers, 8 suppliers, 3 warehouses,
-and six months of orders, purchase orders, invoices and payments.
+six months of orders, purchase orders, invoices and payments, and a dozen service tickets with deliberate
+recurring themes (X200 seal leaks, late deliveries, duplicate invoices) for the AI analysis to find.
 
 **3. AI service** (from `ai-service/`):
 
@@ -143,11 +147,16 @@ Compose runs four containers:
 
 | Suite | Command | Count |
 |---|---|---|
-| Backend | `dotnet test` in `backend/` | 43 |
-| AI service | `uv run pytest` in `ai-service/` | 19 |
-| Frontend | `npx ng test --watch=false` in `frontend/` | 12 |
+| Backend | `dotnet test` in `backend/` | 51 |
+| AI service | `uv run pytest` in `ai-service/` | 23 |
+| Frontend | `npx ng test --watch=false` in `frontend/` | 15 |
+| AI evaluation | `uv run python -m evals.run` in `ai-service/` (needs the API, AI service and `OPSPILOT_PASSWORD`) | 12 cases |
 
-`.github/workflows/ci.yml` runs all three suites on every push and pull request. It also runs:
+The AI evaluation (`ai-service/evals/`) runs real questions as different users against the live stack. It checks
+the routed intent, the tools called, the generated SQL, citations, answer content and role security, and fails
+below a 90% pass rate. It calls the LLM, so it is run on demand rather than in CI.
+
+`.github/workflows/ci.yml` runs the three test suites on every push and pull request. It also runs:
 - warnings-as-errors builds
 - dependency vulnerability audits (`dotnet list package --vulnerable`, `npm audit`, `pip-audit`)
 - a build of all Docker images
@@ -178,15 +187,15 @@ All accounts use the password you set in `Seed:AdminPassword`.
    3. Sign in as `manager@`, open the **Approval center**, change a quantity, and approve.
    4. Draft POs are created through the normal purchasing rules, and the original conversation shows the agent's follow-up.
 5. **Audit log** (as admin). Filter by *AI-assisted* to see proposal → approval → execution.
-6. **Order to cash.** Create, confirm, ship and invoice a sales order, then record a payment.
-7. **Roles.** As `sales@`, ask the Copilot about invoices; the request is refused. As `finance@`, customers are read-only.
+6. **Service tickets.** Open *Service Tickets*, click *Find recurring problems* (the AI groups the X200 seal
+   leaks, late deliveries and duplicate invoices), then open TCK-50003 and click *Summarise*.
+7. **Order to cash.** Create, confirm, ship and invoice a sales order, then record a payment.
+8. **Roles.** As `sales@`, ask the Copilot about invoices; the request is refused. As `finance@`, customers are read-only.
 
 ## Roadmap
 
-- **Service tickets module** (design doc §13), with Copilot summaries of ticket history.
 - **Scheduled jobs** (Hangfire): nightly stock-risk scans and overdue-invoice reminders.
-- **AI evaluation:** an evaluation dataset of questions with expected sources and findings, plus tool-call and
-  retrieval-accuracy metrics in CI.
+- **AI evaluation in CI:** run the evaluation set on a schedule against a staging stack.
 - **Hardening:** refresh tokens, optimistic concurrency on stock rows, OpenTelemetry tracing across API and agents,
   and a deployment stage in CI.
 

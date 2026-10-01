@@ -42,13 +42,21 @@ public class DemoDataSeeder(
         if (await db.InventoryItems.AnyAsync())
         {
             logger.LogInformation("Demo operational data already present, skipping.");
-            return;
+        }
+        else
+        {
+            var (orders, purchaseOrders, invoices) = await new DemoOperationsSeeder(db).SeedAsync();
+            logger.LogInformation(
+                "Seeded demo operations: {Orders} sales orders, {PurchaseOrders} purchase orders, {Invoices} invoices.",
+                orders, purchaseOrders, invoices);
         }
 
-        var (orders, purchaseOrders, invoices) = await new DemoOperationsSeeder(db).SeedAsync();
-        logger.LogInformation(
-            "Seeded demo operations: {Orders} sales orders, {PurchaseOrders} purchase orders, {Invoices} invoices.",
-            orders, purchaseOrders, invoices);
+        // Separate check, so databases seeded before the tickets module still get demo tickets.
+        if (!await db.ServiceTickets.AnyAsync())
+        {
+            var tickets = await new DemoTicketsSeeder(db).SeedAsync();
+            logger.LogInformation("Seeded {Tickets} demo service tickets.", tickets);
+        }
     }
 
     private async Task SeedMasterDataAsync()

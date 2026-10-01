@@ -23,4 +23,5 @@ export const WriteAccess = {
   receiveGoods: [Administrator, Manager, InventoryManager, ProcurementUser],
   finance: [Administrator, Manager, FinanceUser],
   auditLog: [Administrator, Manager],
+  tickets: [Administrator, Manager, SalesUser, InventoryManager],
 } as const;

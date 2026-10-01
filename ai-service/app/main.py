@@ -13,7 +13,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException
 from langgraph.types import Command
 from pydantic import BaseModel, Field
 
-from app import llm
+from app import llm, tickets
 from app.config import get_settings
 from app.context import RequestContext, set_current
 from app.erp import ErpClient, ErpError
@@ -104,6 +104,26 @@ def resume(request: ResumeRequest) -> dict:
     offset = len(snapshot.values.get("trace", []))
     value = {"decision": request.decision, "comments": request.comments, "outcome": request.outcome}
     return _run(request.accessToken, request.user, lambda: graph.invoke(Command(resume=value), config), config, trace_offset=offset)
+
+
+@app.post("/tickets/summarize", dependencies=[Depends(require_internal_key)])
+def summarize_ticket(request: tickets.TicketSummaryInput) -> dict:
+    return _one_shot(lambda: tickets.summarize(request))
+
+
+@app.post("/tickets/insights", dependencies=[Depends(require_internal_key)])
+def ticket_insights(request: tickets.TicketInsightsInput) -> dict:
+    return _one_shot(lambda: tickets.insights(request))
+
+
+def _one_shot(task) -> dict:
+    try:
+        return task()
+    except llm.LlmUnavailable as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+    except Exception as error:
+        log.exception("Ticket AI task failed")
+        raise HTTPException(status_code=502, detail="The AI model call failed.") from error
 
 
 def _run(access_token: str, user: User, invoke, config: dict, trace_offset: int) -> dict:

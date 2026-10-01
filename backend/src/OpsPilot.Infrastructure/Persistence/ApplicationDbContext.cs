@@ -11,6 +11,7 @@ using OpsPilot.Domain.Identity;
 using OpsPilot.Domain.Inventory;
 using OpsPilot.Domain.Purchasing;
 using OpsPilot.Domain.Sales;
+using OpsPilot.Domain.Service;
 using OpsPilot.Domain.Suppliers;
 
 namespace OpsPilot.Infrastructure.Persistence;
@@ -31,6 +32,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<AiConversation> AiConversations => Set<AiConversation>();
     public DbSet<AiAction> AiActions => Set<AiAction>();
+    public DbSet<ServiceTicket> ServiceTickets => Set<ServiceTicket>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

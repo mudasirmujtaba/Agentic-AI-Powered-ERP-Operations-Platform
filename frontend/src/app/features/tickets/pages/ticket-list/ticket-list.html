@@ -1,0 +1,194 @@
+<app-page-header title="Service tickets" subtitle="Customer issues from report to resolution">
+  <button *appHasRole="writeAccess" mat-flat-button routerLink="/tickets/new">
+    <mat-icon>add</mat-icon>
+    New ticket
+  </button>
+</app-page-header>
+
+@if (stats(); as s) {
+  <div class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+    <button type="button" class="flex flex-col rounded-lg border border-gray-200 bg-transparent p-3 text-left text-inherit cursor-pointer transition-colors hover:bg-gray-50" (click)="showTile('open')">
+      <span class="text-sm opacity-70">Open</span>
+      <span class="mt-1 text-2xl font-medium tracking-tight">{{ s.open }}</span>
+    </button>
+    <button type="button" class="flex flex-col rounded-lg border border-gray-200 bg-transparent p-3 text-left text-inherit cursor-pointer transition-colors hover:bg-gray-50" (click)="showTile('urgent')">
+      <span class="text-sm opacity-70">Urgent &amp; open</span>
+      <span class="mt-1 text-2xl font-medium tracking-tight" [class.text-red-700]="s.urgent > 0">{{ s.urgent }}</span>
+    </button>
+    <div class="flex flex-col rounded-lg border border-gray-200 bg-transparent p-3 text-left text-inherit">
+      <span class="text-sm opacity-70">Unassigned</span>
+      <span class="mt-1 text-2xl font-medium tracking-tight">{{ s.unassigned }}</span>
+    </div>
+    <button type="button" class="flex flex-col rounded-lg border border-gray-200 bg-transparent p-3 text-left text-inherit cursor-pointer transition-colors hover:bg-gray-50" (click)="showTile('mine')">
+      <span class="text-sm opacity-70">Assigned to me</span>
+      <span class="mt-1 text-2xl font-medium tracking-tight">{{ s.assignedToMe }}</span>
+    </button>
+    <div class="flex flex-col rounded-lg border border-gray-200 bg-transparent p-3 text-left text-inherit">
+      <span class="text-sm opacity-70">Resolved (30 days)</span>
+      <span class="mt-1 text-2xl font-medium tracking-tight">{{ s.resolvedLast30Days }}</span>
+    </div>
+  </div>
+}
+
+<!-- AI: recurring problems across recent tickets (design doc §13). -->
+<section class="mb-4 rounded-lg border border-indigo-200 bg-indigo-50/50 p-4">
+  <div class="flex flex-wrap items-center gap-3">
+    <mat-icon class="text-indigo-700">auto_awesome</mat-icon>
+    <div class="min-w-0 flex-1">
+      <h2 class="m-0 text-base font-medium">Recurring problems</h2>
+      <p class="m-0 text-sm opacity-70">AI analysis of recent tickets for patterns by product, category and customer.</p>
+    </div>
+    <mat-form-field appearance="outline" class="w-36" subscriptSizing="dynamic">
+      <mat-label>Period</mat-label>
+      <mat-select [value]="insightDays()" (selectionChange)="insightDays.set($event.value)">
+        <mat-option [value]="30">30 days</mat-option>
+        <mat-option [value]="90">90 days</mat-option>
+        <mat-option [value]="180">180 days</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <button mat-stroked-button (click)="findRecurringProblems()" [disabled]="insightsLoading()">
+      <mat-icon>insights</mat-icon>
+      {{ insights() ? 'Re-analyse' : 'Find recurring problems' }}
+    </button>
+  </div>
+
+  @if (insightsLoading()) {
+    <mat-progress-bar mode="indeterminate" class="mt-3" />
+  }
+  @if (insightsError(); as error) {
+    <p class="m-0 mt-3 text-sm text-red-700" role="alert">{{ error }}</p>
+  }
+  @if (insights(); as result) {
+    <div class="answer mt-3 text-sm leading-relaxed" [innerHTML]="result.content | markdownLite"></div>
+    <p class="m-0 mt-2 text-xs opacity-60">
+      AI-generated from {{ result.ticketsAnalysed }} tickets · {{ result.generatedAtUtc | date: 'short' }} · verify before acting
+    </p>
+  }
+</section>
+
+<div class="flex flex-wrap items-center gap-4">
+  <mat-form-field appearance="outline" class="w-full max-w-xs" subscriptSizing="dynamic">
+    <mat-label>Search</mat-label>
+    <mat-icon matPrefix>search</mat-icon>
+    <input matInput placeholder="Ticket, subject, customer, product" (input)="list.onSearch($any($event.target).value)" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-48" subscriptSizing="dynamic">
+    <mat-label>Status</mat-label>
+    <mat-select [value]="status()" (selectionChange)="setStatus($event.value)">
+      <mat-option [value]="undefined">All statuses</mat-option>
+      @for (option of statusOptions; track option.value) {
+        <mat-option [value]="option.value">{{ option.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-40" subscriptSizing="dynamic">
+    <mat-label>Priority</mat-label>
+    <mat-select [value]="priority()" (selectionChange)="setPriority($event.value)">
+      <mat-option [value]="undefined">All priorities</mat-option>
+      @for (option of priorityOptions; track option.value) {
+        <mat-option [value]="option.value">{{ option.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-44" subscriptSizing="dynamic">
+    <mat-label>Category</mat-label>
+    <mat-select [value]="category()" (selectionChange)="setCategory($event.value)">
+      <mat-option [value]="undefined">All categories</mat-option>
+      @for (option of categoryOptions; track option.value) {
+        <mat-option [value]="option.value">{{ option.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-slide-toggle [checked]="openOnly()" (change)="setOpenOnly($event.checked)">Open only</mat-slide-toggle>
+  <mat-slide-toggle [checked]="mine()" (change)="setMine($event.checked)">Assigned to me</mat-slide-toggle>
+</div>
+
+<div class="mt-4 overflow-x-auto rounded-lg border border-gray-200">
+  @if (list.loading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (list.error(); as error) {
+    <p class="m-0 p-4 text-red-700">{{ error }}</p>
+  }
+
+  <table mat-table [dataSource]="list.items()" matSort matSortActive="createdAtUtc" matSortDirection="desc" (matSortChange)="list.onSort($event)" class="w-full">
+    <ng-container matColumnDef="ticketNumber">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Ticket</th>
+      <td mat-cell *matCellDef="let t" class="whitespace-nowrap font-mono">{{ t.ticketNumber }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="subject">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Subject</th>
+      <td mat-cell *matCellDef="let t">
+        {{ t.subject }}
+        @if (t.productCode) {
+          <span class="ml-1 font-mono text-xs opacity-60">{{ t.productCode }}</span>
+        }
+        @if (t.commentCount) {
+          <span class="ml-1 whitespace-nowrap text-xs opacity-60">· {{ t.commentCount }} {{ t.commentCount === 1 ? 'comment' : 'comments' }}</span>
+        }
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="customerName">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Customer</th>
+      <td mat-cell *matCellDef="let t">{{ t.customerName }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="category">
+      <th mat-header-cell *matHeaderCellDef>Category</th>
+      <td mat-cell *matCellDef="let t">{{ categories[t.category] }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="priority">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Priority</th>
+      <td mat-cell *matCellDef="let t">
+        <app-status-badge [label]="priorities[t.priority].label" [tone]="priorities[t.priority].tone" />
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+      <td mat-cell *matCellDef="let t">
+        <app-status-badge [label]="statuses[t.status].label" [tone]="statuses[t.status].tone" />
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="assignedToName">
+      <th mat-header-cell *matHeaderCellDef>Assigned to</th>
+      <td mat-cell *matCellDef="let t">
+        @if (t.assignedToName) {
+          {{ t.assignedToName }}
+        } @else {
+          <span class="opacity-60">Unassigned</span>
+        }
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="createdAtUtc">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Opened</th>
+      <td mat-cell *matCellDef="let t" class="whitespace-nowrap">{{ t.createdAtUtc | date: 'mediumDate' }}</td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="columns"></tr>
+    <tr mat-row *matRowDef="let row; columns: columns" (click)="open(row)" class="cursor-pointer hover:bg-gray-50"></tr>
+    <tr class="mat-row" *matNoDataRow>
+      <td class="p-4 text-center opacity-70" [attr.colspan]="columns.length">
+        {{ list.loading() ? 'Loading…' : 'No tickets match your filters.' }}
+      </td>
+    </tr>
+  </table>
+
+  <mat-paginator
+    [length]="list.totalCount()"
+    [pageIndex]="list.query().page - 1"
+    [pageSize]="list.query().pageSize"
+    [pageSizeOptions]="[10, 20, 50]"
+    (page)="list.onPage($event)"
+  />
+</div>

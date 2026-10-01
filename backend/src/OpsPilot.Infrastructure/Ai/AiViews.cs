@@ -26,6 +26,7 @@ public static class AiViews
             ["inventory_transactions"] = ("Stock ledger. type: Purchase, Sale, Return, Adjustment, Transfer, Damaged. quantity is signed (sales negative).", Everyone),
             ["invoices"] = ("Invoices. status: Draft, Issued, PartiallyPaid, Paid, Cancelled. balance = total_amount - amount_paid; is_overdue computed.", FinanceRoles),
             ["payments"] = ("Payments applied to invoices (join on invoice_number).", FinanceRoles),
+            ["service_tickets"] = ("Customer service tickets. status: Open, InProgress, WaitingOnCustomer, Resolved, Closed. priority: Low, Medium, High, Urgent. category: General, Delivery, ProductDefect, Billing, Installation, Returns. is_open computed.", Everyone),
         };
 
     public static bool IsAllowed(string view, IReadOnlyList<string> userRoles) =>

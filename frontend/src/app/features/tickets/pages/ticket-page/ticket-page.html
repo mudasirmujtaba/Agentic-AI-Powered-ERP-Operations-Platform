@@ -1,0 +1,243 @@
+<app-page-header [title]="ticket()?.ticketNumber ?? 'New ticket'" [subtitle]="ticket()?.subject ?? 'Log a customer issue'">
+  @if (ticket(); as t) {
+    <app-status-badge [label]="priorities[t.priority].label" [tone]="priorities[t.priority].tone" />
+    <app-status-badge [label]="statuses[t.status].label" [tone]="statuses[t.status].tone" />
+  }
+  <a mat-button routerLink="/tickets">
+    <mat-icon>arrow_back</mat-icon>
+    Tickets
+  </a>
+</app-page-header>
+
+@if (loading() || busy()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+@if (formError(); as error) {
+  <p class="mb-4 rounded-md bg-red-50 p-3 text-red-800" role="alert">{{ error }}</p>
+}
+
+<div class="grid grid-cols-1 gap-6" [class.lg:grid-cols-3]="!!ticket()">
+  <div class="min-w-0 lg:col-span-2">
+    <!-- Details form: create, or edit while not closed. -->
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <section class="grid grid-cols-1 gap-x-4 md:grid-cols-2">
+        <mat-form-field appearance="outline" class="md:col-span-2">
+          <mat-label>Subject</mat-label>
+          <input matInput formControlName="subject" />
+          <mat-error>{{ firstError(form.controls.subject) }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="md:col-span-2">
+          <mat-label>Description</mat-label>
+          <textarea matInput rows="4" formControlName="description"></textarea>
+          <mat-error>{{ firstError(form.controls.description) }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Customer</mat-label>
+          <mat-select formControlName="customerId">
+            @for (customer of customers(); track customer.id) {
+              <mat-option [value]="customer.id">{{ customer.name }} ({{ customer.code }})</mat-option>
+            }
+          </mat-select>
+          <mat-error>{{ firstError(form.controls.customerId) }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Related order (optional)</mat-label>
+          <mat-select formControlName="salesOrderId">
+            <mat-option [value]="null">None</mat-option>
+            @for (order of customerOrders(); track order.id) {
+              <mat-option [value]="order.id">{{ order.orderNumber }} · {{ order.orderDateUtc | date: 'mediumDate' }} · {{ order.status }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Product (optional)</mat-label>
+          <mat-select formControlName="productId">
+            <mat-option [value]="null">None</mat-option>
+            @for (product of products(); track product.id) {
+              <mat-option [value]="product.id">{{ product.code }} · {{ product.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Assigned to</mat-label>
+          <mat-select formControlName="assignedToUserId">
+            <mat-option [value]="null">Unassigned</mat-option>
+            @for (user of assignees(); track user.id) {
+              <mat-option [value]="user.id">{{ user.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Category</mat-label>
+          <mat-select formControlName="category">
+            @for (option of categoryOptions; track option.value) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Priority</mat-label>
+          <mat-select formControlName="priority">
+            @for (option of priorityOptions; track option.value) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </section>
+
+      @if (!ticket() || isEditable()) {
+        <div class="mb-6 flex gap-2">
+          <button mat-flat-button type="submit" [disabled]="busy() || loading() || (!!ticket() && form.pristine)">
+            {{ ticket() ? 'Save changes' : 'Create ticket' }}
+          </button>
+          @if (!ticket()) {
+            <a mat-button routerLink="/tickets">Cancel</a>
+          }
+        </div>
+      }
+    </form>
+
+    @if (ticket(); as t) {
+      <!-- Conversation -->
+      <h2 class="mb-2 mt-0 text-lg font-medium">Activity</h2>
+      <ol class="m-0 mb-4 list-none space-y-3 p-0">
+        <li class="rounded-lg border border-gray-200 p-3 text-sm">
+          <div class="mb-1 text-xs opacity-70">Opened {{ t.createdAtUtc | date: 'medium' }} for {{ t.customerName }}</div>
+          <div class="whitespace-pre-line">{{ t.description }}</div>
+        </li>
+        @for (comment of t.comments; track comment.id) {
+          <li class="rounded-lg border p-3 text-sm" [class]="comment.isInternal ? 'border-amber-200 bg-amber-50' : 'border-gray-200'">
+            <div class="mb-1 flex flex-wrap items-center gap-2 text-xs">
+              <span class="font-medium">{{ comment.authorName }}</span>
+              <span class="opacity-70">{{ comment.createdAtUtc | date: 'medium' }}</span>
+              @if (comment.isInternal) {
+                <app-status-badge label="Internal note" tone="warning" />
+              }
+            </div>
+            <div class="whitespace-pre-line">{{ comment.body }}</div>
+          </li>
+        }
+        @if (t.resolution) {
+          <li class="rounded-lg border border-green-200 bg-green-50 p-3 text-sm">
+            <div class="mb-1 text-xs font-medium text-green-800">Resolution · {{ t.resolvedAtUtc | date: 'medium' }}</div>
+            <div class="whitespace-pre-line">{{ t.resolution }}</div>
+          </li>
+        }
+      </ol>
+
+      @if (isEditable()) {
+        <form [formGroup]="commentForm" (ngSubmit)="addComment()" class="rounded-lg border border-gray-200 p-3">
+          <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+            <mat-label>Add a comment</mat-label>
+            <textarea matInput rows="3" formControlName="body"></textarea>
+          </mat-form-field>
+          <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
+            <mat-checkbox formControlName="isInternal">Internal note (staff only)</mat-checkbox>
+            <button mat-flat-button type="submit" [disabled]="busy()">
+              <mat-icon>send</mat-icon>
+              Post
+            </button>
+          </div>
+        </form>
+      }
+    }
+  </div>
+
+  @if (ticket(); as t) {
+    <aside class="space-y-4">
+      <!-- Workflow: only transitions the domain allows from the current status. -->
+      @if (canManage() && t.allowedNextStatuses.length) {
+        <section class="rounded-lg border border-gray-200 p-4">
+          <h2 class="mb-3 mt-0 text-base font-medium">Status</h2>
+          <div class="flex flex-wrap gap-2">
+            @for (target of t.allowedNextStatuses; track target) {
+              @if (target === 'Resolved') {
+                <button mat-flat-button (click)="changeStatus(target)" [disabled]="busy()">{{ actionLabel(target) }}</button>
+              } @else {
+                <button mat-stroked-button (click)="changeStatus(target)" [disabled]="busy()">{{ actionLabel(target) }}</button>
+              }
+            }
+          </div>
+          @if (resolving()) {
+            <div class="mt-3">
+              <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Resolution</mat-label>
+                <textarea matInput rows="3" [formControl]="resolutionControl" placeholder="What fixed it?"></textarea>
+                <mat-error>{{ firstError(resolutionControl) }}</mat-error>
+              </mat-form-field>
+              <div class="flex gap-2">
+                <button mat-flat-button (click)="confirmResolve()" [disabled]="busy()">Mark resolved</button>
+                <button mat-button (click)="resolving.set(false)">Cancel</button>
+              </div>
+            </div>
+          }
+        </section>
+      }
+
+      <!-- AI summary (design doc §13) -->
+      <section class="rounded-lg border border-indigo-200 bg-indigo-50/50 p-4">
+        <div class="mb-2 flex items-center gap-2">
+          <mat-icon class="text-indigo-700">auto_awesome</mat-icon>
+          <h2 class="m-0 flex-1 text-base font-medium">AI summary</h2>
+          @if (canManage()) {
+            <button mat-stroked-button (click)="summarize()" [disabled]="summarizing()">
+              {{ t.aiSummary ? 'Refresh' : 'Summarise' }}
+            </button>
+          }
+        </div>
+        @if (summarizing()) {
+          <mat-progress-bar mode="indeterminate" />
+        }
+        @if (t.aiSummary) {
+          <div class="answer text-sm leading-relaxed" [innerHTML]="t.aiSummary | markdownLite"></div>
+          <p class="m-0 mt-2 text-xs opacity-60">
+            Generated {{ t.aiSummaryAtUtc | date: 'short' }}
+            @if (t.updatedAtUtc && t.aiSummaryAtUtc && t.updatedAtUtc > t.aiSummaryAtUtc) {
+              · the ticket has changed since; refresh for the latest
+            }
+          </p>
+        } @else if (!summarizing()) {
+          <p class="m-0 text-sm opacity-70">Summarise the ticket and its history for whoever picks it up next.</p>
+        }
+      </section>
+
+      <dl class="m-0 grid grid-cols-2 gap-3 rounded-lg border border-gray-200 p-4 text-sm">
+        <div><dt class="opacity-70">Category</dt><dd class="m-0">{{ categories[t.category] }}</dd></div>
+        <div><dt class="opacity-70">Assigned to</dt><dd class="m-0">{{ t.assignedToName ?? 'Unassigned' }}</dd></div>
+        <div>
+          <dt class="opacity-70">Order</dt>
+          <dd class="m-0">
+            @if (t.salesOrderId) {
+              <a [routerLink]="['/sales', t.salesOrderId]" class="font-mono">{{ t.orderNumber }}</a>
+            } @else {
+              —
+            }
+          </dd>
+        </div>
+        <div>
+          <dt class="opacity-70">Product</dt>
+          <dd class="m-0">
+            @if (t.productId) {
+              <a [routerLink]="['/inventory/products', t.productId]" class="font-mono">{{ t.productCode }}</a>
+            } @else {
+              —
+            }
+          </dd>
+        </div>
+        <div><dt class="opacity-70">Opened</dt><dd class="m-0">{{ t.createdAtUtc | date: 'medium' }}</dd></div>
+        <div><dt class="opacity-70">Last activity</dt><dd class="m-0">{{ (t.updatedAtUtc ?? t.createdAtUtc) | date: 'medium' }}</dd></div>
+        @if (t.closedAtUtc) {
+          <div><dt class="opacity-70">Closed</dt><dd class="m-0">{{ t.closedAtUtc | date: 'medium' }}</dd></div>
+        }
+      </dl>
+    </aside>
+  }
+</div>

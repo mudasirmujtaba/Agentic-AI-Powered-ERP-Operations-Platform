@@ -9,6 +9,7 @@ using OpsPilot.Application.Finance;
 using OpsPilot.Application.Inventory;
 using OpsPilot.Application.Purchasing;
 using OpsPilot.Application.Sales;
+using OpsPilot.Application.Service;
 using OpsPilot.Application.Products;
 using OpsPilot.Application.Suppliers;
 using OpsPilot.Application.Warehouses;
@@ -35,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<AuditLogWriter>();
         services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddScoped<IAiCopilotService, AiCopilotService>();
+        services.AddScoped<ITicketService, TicketService>();
 
         return services;
     }

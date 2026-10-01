@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using OpsPilot.Application.Ai;
 using OpsPilot.Application.Common.Exceptions;
 using OpsPilot.Domain.Common;
 
@@ -9,8 +10,19 @@ namespace OpsPilot.Api.Infrastructure;
 public class GlobalExceptionHandler(IProblemDetailsService problemDetailsService, ILogger<GlobalExceptionHandler> logger)
     : IExceptionHandler
 {
+    /// <summary>Non-standard "client closed request" status, as used by nginx.</summary>
+    private const int ClientClosedRequest = 499;
+
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
+        // The client went away (e.g. the UI superseded a request); the resulting cancellation is not a server error.
+        if (httpContext.RequestAborted.IsCancellationRequested)
+        {
+            logger.LogDebug("Request {Method} {Path} was aborted by the client", httpContext.Request.Method, httpContext.Request.Path);
+            httpContext.Response.StatusCode = ClientClosedRequest;
+            return true;
+        }
+
         ProblemDetails problem = exception switch
         {
             ValidationException validation => new ValidationProblemDetails(
@@ -37,6 +49,12 @@ public class GlobalExceptionHandler(IProblemDetailsService problemDetailsService
             {
                 Status = StatusCodes.Status422UnprocessableEntity,
                 Title = "Business rule violated.",
+                Detail = exception.Message,
+            },
+            AiServiceUnavailableException => new ProblemDetails
+            {
+                Status = StatusCodes.Status503ServiceUnavailable,
+                Title = "The AI service is unavailable.",
                 Detail = exception.Message,
             },
             _ => new ProblemDetails

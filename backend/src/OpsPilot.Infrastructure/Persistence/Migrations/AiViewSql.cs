@@ -94,6 +94,23 @@ internal static class AiViewSql
             """),
     ];
 
+    /// <summary>Added by the AddServiceTickets migration (kept apart so the earlier migration never references the tables).</summary>
+    public static readonly (string Name, string Body)[] TicketViews =
+    [
+        ("service_tickets", """
+            SELECT t.TicketNumber AS ticket_number, t.Subject AS subject, c.Name AS customer_name, o.OrderNumber AS order_number,
+                   p.Code AS product_code, p.Name AS product_name,
+                   t.Category AS category, t.Priority AS priority, t.Status AS status, t.AssignedToName AS assigned_to,
+                   t.CreatedAtUtc AS created_at, t.ResolvedAtUtc AS resolved_at,
+                   CAST(CASE WHEN t.Status IN ('Resolved', 'Closed') THEN 0 ELSE 1 END AS bit) AS is_open,
+                   (SELECT COUNT(*) FROM dbo.TicketComments tc WHERE tc.TicketId = t.Id) AS comment_count
+            FROM dbo.ServiceTickets t
+            JOIN dbo.Customers c ON c.Id = t.CustomerId
+            LEFT JOIN dbo.SalesOrders o ON o.Id = t.SalesOrderId
+            LEFT JOIN dbo.Products p ON p.Id = t.ProductId
+            """),
+    ];
+
     public static string Create(string name, string body) => $"CREATE OR ALTER VIEW ai.{name} AS\n{body}";
 
     public static string Drop(string name) => $"DROP VIEW IF EXISTS ai.{name};";

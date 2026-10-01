@@ -7,7 +7,31 @@ public interface IAiAgentClient
 {
     Task<AgentReply> ChatAsync(AgentChatRequest request, CancellationToken cancellationToken = default);
     Task<AgentReply> ResumeAsync(AgentResumeRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>One-shot text tasks over data the ERP has already authorised and passes in (no agent tools, no checkpoint).</summary>
+    Task<AiTextReply> SummarizeTicketAsync(TicketSummaryInput input, CancellationToken cancellationToken = default);
+    Task<AiTextReply> FindRecurringProblemsAsync(TicketInsightsInput input, CancellationToken cancellationToken = default);
 }
+
+public record AiTextReply(string Content, JsonElement? Metadata);
+
+public record TicketHistoryEntry(string Author, string Body, bool IsInternal, DateTime AtUtc);
+
+public record TicketSummaryInput(
+    string TicketNumber,
+    string Subject,
+    string Description,
+    string Customer,
+    string Category,
+    string Priority,
+    string Status,
+    string? Resolution,
+    IReadOnlyList<TicketHistoryEntry> History);
+
+public record TicketBrief(string TicketNumber, string Subject, string Description, string Customer, string Category,
+    string Priority, string Status, string? Product, string? Resolution, DateTime CreatedAtUtc);
+
+public record TicketInsightsInput(int Days, IReadOnlyList<TicketBrief> Tickets);
 
 public record AgentUser(Guid Id, string Email, string Name, IReadOnlyList<string> Roles);
 

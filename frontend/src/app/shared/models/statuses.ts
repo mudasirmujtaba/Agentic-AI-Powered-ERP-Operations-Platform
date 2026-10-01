@@ -16,6 +16,9 @@ export type PurchaseOrderStatus =
   | 'Cancelled';
 export type InvoiceStatus = 'Draft' | 'Issued' | 'PartiallyPaid' | 'Paid' | 'Cancelled';
 export type StockStatus = 'Ok' | 'Reorder' | 'BelowSafetyStock' | 'OutOfStock';
+export type TicketStatus = 'Open' | 'InProgress' | 'WaitingOnCustomer' | 'Resolved' | 'Closed';
+export type TicketPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
+export type TicketCategory = 'General' | 'Delivery' | 'ProductDefect' | 'Billing' | 'Installation' | 'Returns';
 
 export const SALES_ORDER_STATUSES: Record<SalesOrderStatus, StatusStyle> = {
   Draft: { label: 'Draft', tone: 'neutral' },
@@ -51,6 +54,30 @@ export const STOCK_STATUSES: Record<StockStatus, StatusStyle> = {
   Reorder: { label: 'Reorder', tone: 'warning' },
   BelowSafetyStock: { label: 'Below safety stock', tone: 'danger' },
   OutOfStock: { label: 'Out of stock', tone: 'danger' },
+};
+
+export const TICKET_STATUSES: Record<TicketStatus, StatusStyle> = {
+  Open: { label: 'Open', tone: 'warning' },
+  InProgress: { label: 'In progress', tone: 'warning' },
+  WaitingOnCustomer: { label: 'Waiting on customer', tone: 'neutral' },
+  Resolved: { label: 'Resolved', tone: 'success' },
+  Closed: { label: 'Closed', tone: 'neutral' },
+};
+
+export const TICKET_PRIORITIES: Record<TicketPriority, StatusStyle> = {
+  Low: { label: 'Low', tone: 'neutral' },
+  Medium: { label: 'Medium', tone: 'neutral' },
+  High: { label: 'High', tone: 'warning' },
+  Urgent: { label: 'Urgent', tone: 'danger' },
+};
+
+export const TICKET_CATEGORIES: Record<TicketCategory, string> = {
+  General: 'General',
+  Delivery: 'Delivery',
+  ProductDefect: 'Product defect',
+  Billing: 'Billing',
+  Installation: 'Installation',
+  Returns: 'Returns',
 };
 
 /** `{ value, label }` options for status filter selects. */

@@ -23,7 +23,9 @@ const INTENT_LABELS: Record<string, string> = {
   templateUrl: './assistant-message.html',
   styles: `
     :host ::ng-deep .answer p { margin: 0 0 0.5rem; }
-    :host ::ng-deep .answer ul { margin: 0 0 0.5rem; padding-left: 1.25rem; }
+    :host ::ng-deep .answer ul, :host ::ng-deep .answer ol { margin: 0 0 0.5rem; padding-left: 1.25rem; }
+    :host ::ng-deep .answer ul { list-style: disc; }
+    :host ::ng-deep .answer ol { list-style: decimal; }
     :host ::ng-deep .answer code { font-size: 0.85em; background: var(--mat-sys-surface-container); padding: 0 0.25rem; border-radius: 4px; }
     :host ::ng-deep .answer .citation { color: var(--mat-sys-primary); font-weight: 500; }
     details > summary { cursor: pointer; }

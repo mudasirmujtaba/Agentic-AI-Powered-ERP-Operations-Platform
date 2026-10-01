@@ -17,6 +17,7 @@ public static class Policies
     public const string ReceiveGoods = nameof(ReceiveGoods);
     public const string ManageFinance = nameof(ManageFinance);
     public const string ViewAuditLog = nameof(ViewAuditLog);
+    public const string ManageTickets = nameof(ManageTickets);
 
     public static readonly IReadOnlyDictionary<string, string[]> RolesByPolicy = new Dictionary<string, string[]>
     {
@@ -32,5 +33,6 @@ public static class Policies
         [ReceiveGoods] = [Roles.Administrator, Roles.Manager, Roles.InventoryManager, Roles.ProcurementUser],
         [ManageFinance] = [Roles.Administrator, Roles.Manager, Roles.FinanceUser],
         [ViewAuditLog] = [Roles.Administrator, Roles.Manager],
+        [ManageTickets] = [Roles.Administrator, Roles.Manager, Roles.SalesUser, Roles.InventoryManager],
     };
 }
