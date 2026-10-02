@@ -25,3 +25,6 @@ ai-service/data/
 
 # Docker Compose secrets
 /.env
+
+# Private design document (kept local only)
+*.pdf
