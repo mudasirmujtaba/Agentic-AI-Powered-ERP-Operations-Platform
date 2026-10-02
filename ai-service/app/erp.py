@@ -12,6 +12,7 @@ from typing import Any
 import httpx
 
 from app.config import get_settings
+from app.observability import traceparent
 
 
 class ErpError(Exception):
@@ -23,12 +24,20 @@ class ErpError(Exception):
         self.detail = detail or message
 
 
+def _headers(access_token: str) -> dict[str, str]:
+    headers = {"Authorization": f"Bearer {access_token}"}
+    # Forward the caller's trace so the ERP's handling of these calls joins the same distributed trace.
+    if parent := traceparent.get():
+        headers["traceparent"] = parent
+    return headers
+
+
 class ErpClient:
     def __init__(self, access_token: str, base_url: str | None = None, transport: httpx.BaseTransport | None = None):
         settings = get_settings()
         self._client = httpx.Client(
             base_url=(base_url or settings.erp_api_url).rstrip("/") + "/",
-            headers={"Authorization": f"Bearer {access_token}"},
+            headers=_headers(access_token),
             verify=settings.erp_verify_tls,
             timeout=15.0,
             transport=transport,

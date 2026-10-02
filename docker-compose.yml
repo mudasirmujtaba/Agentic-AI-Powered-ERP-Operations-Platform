@@ -37,6 +37,9 @@ services:
       AiService__BaseUrl: http://ai:8001
       AiService__InternalKey: ${AI_INTERNAL_KEY:?Set AI_INTERNAL_KEY in .env}
       Cors__AllowedOrigins__0: http://localhost:8080
+      Logging__Json: "true"
+      # Empty unless the "observability" profile is used (see the jaeger service).
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
     depends_on:
       sqlserver:
         condition: service_healthy
@@ -55,6 +58,14 @@ services:
       - ai-models:/app/models
     depends_on:
       - api
+
+  # Optional trace viewer: `OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317 docker compose --profile observability up`
+  # then open http://localhost:16686.
+  jaeger:
+    image: jaegertracing/all-in-one:1.62.0
+    profiles: [observability]
+    ports:
+      - "16686:16686"
 
   web:
     build: ./frontend

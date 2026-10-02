@@ -36,3 +36,16 @@ def test_scan_with_no_risk_skips_the_model(monkeypatch):
     result = jobs.inventory_scan()
     assert result["risks"] == []
     assert "All 1 products" in result["content"]
+
+
+def test_traceparent_is_validated_and_forwarded():
+    from app.erp import _headers
+    from app.observability import set_traceparent, trace_id
+
+    set_traceparent("00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01")
+    assert trace_id() == "0af7651916cd43dd8448eb211c80319c"
+    assert _headers("t")["traceparent"].startswith("00-0af7651916cd43dd")
+
+    set_traceparent("garbage")
+    assert trace_id() is None
+    assert "traceparent" not in _headers("t")

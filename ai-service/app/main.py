@@ -9,7 +9,7 @@ import time
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from langgraph.types import Command
 from pydantic import BaseModel, Field
 
@@ -18,9 +18,10 @@ from app.config import get_settings
 from app.context import RequestContext, set_current
 from app.erp import ErpClient, ErpError
 from app.graph import create_persistent_graph
+from app.observability import configure_logging, set_traceparent, trace_id
 from app.rag import knowledge_base
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+configure_logging()
 log = logging.getLogger("opspilot.ai")
 
 graph = create_persistent_graph()
@@ -34,6 +35,18 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="OpsPilot AI service", version="0.1.0", lifespan=lifespan)
+
+
+@app.middleware("http")
+async def correlate(request: Request, call_next):
+    """Joins the caller's distributed trace and logs each request with its duration."""
+    set_traceparent(request.headers.get("traceparent"))
+    started = time.perf_counter()
+    response = await call_next(request)
+    if request.url.path != "/health":
+        log.info("%s %s -> %s in %.0f ms", request.method, request.url.path, response.status_code,
+                 (time.perf_counter() - started) * 1000)
+    return response
 
 
 class User(BaseModel):
@@ -187,4 +200,5 @@ def _reply(content: str, intent: str | None, started: float, proposal: dict | No
     meta = metadata or {}
     meta["model"] = settings.groq_model
     meta["durationMs"] = round((time.perf_counter() - started) * 1000)
+    meta["traceId"] = trace_id()
     return {"content": content, "intent": intent, "proposal": proposal, "metadata": meta}

@@ -85,20 +85,21 @@ internal sealed class DemoOperationsSeeder(ApplicationDbContext db)
         var main = _warehouses["WH-MAIN"];
 
         // Fully received history.
-        foreach (var (supplier, daysAgo, lines) in new[]
+        // Days early (-) or late (+) against the expected date, so supplier performance has a realistic spread.
+        foreach (var (supplier, daysAgo, lines, slipDays) in new[]
         {
-            ("SUP-FST", 150, new[] { ("BT-M10", 600), ("NT-M10", 600) }),
-            ("SUP-VOL", 120, new[] { ("CB-16A", 300), ("CT-40A", 180) }),
-            ("SUP-HYD", 95, new[] { ("VB-050", 200), ("VG-100", 120) }),
-            ("SUP-ABC", 70, new[] { ("X200", 150), ("X100", 80) }),
-            ("SUP-GLB", 45, new[] { ("HH-01", 400), ("HV-XL", 250) }),
-            ("SUP-PRC", 35, new[] { ("DR-18V", 40), ("AG-115", 35) }),
+            ("SUP-FST", 150, new[] { ("BT-M10", 600), ("NT-M10", 600) }, -1),
+            ("SUP-VOL", 120, new[] { ("CB-16A", 300), ("CT-40A", 180) }, 0),
+            ("SUP-HYD", 95, new[] { ("VB-050", 200), ("VG-100", 120) }, 4),
+            ("SUP-ABC", 70, new[] { ("X200", 150), ("X100", 80) }, 2),
+            ("SUP-GLB", 45, new[] { ("HH-01", 400), ("HV-XL", 250) }, -2),
+            ("SUP-PRC", 35, new[] { ("DR-18V", 40), ("AG-115", 35) }, 0),
         })
         {
             var po = NewPurchaseOrder(supplier, main, daysAgo, lines);
             ApproveIfNeeded(po, daysAgo);
             po.MarkOrdered(_now.AddDays(-daysAgo + 1));
-            var receivedAt = _now.AddDays(-daysAgo + _suppliers[supplier].AverageLeadTimeDays + 1);
+            var receivedAt = po.ExpectedDeliveryDateUtc!.Value.AddDays(slipDays).AddHours(10);
             foreach (var line in po.Lines)
             {
                 po.Receive(line, line.Quantity, receivedAt);

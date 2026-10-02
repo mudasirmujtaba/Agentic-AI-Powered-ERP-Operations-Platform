@@ -22,6 +22,7 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<AuditableEntityInterceptor>();
+        services.AddSingleton<DbCommandMetricsInterceptor>();
 
         services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
             options
@@ -32,7 +33,9 @@ public static class DependencyInjection
                         // Retry transient failures (timeouts, dropped connections, failovers). Safe because the
                         // app uses no user-initiated transactions; SaveChanges is the unit of work.
                         .EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(5), errorNumbersToAdd: null))
-                .AddInterceptors(serviceProvider.GetRequiredService<AuditableEntityInterceptor>()));
+                .AddInterceptors(
+                    serviceProvider.GetRequiredService<AuditableEntityInterceptor>(),
+                    serviceProvider.GetRequiredService<DbCommandMetricsInterceptor>()));
 
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
