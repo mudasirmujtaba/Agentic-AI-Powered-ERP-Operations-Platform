@@ -1,8 +1,6 @@
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
+// OpsPilot theme: a restrained enterprise palette (navy primary, slate neutrals), Inter, compact density and
+// small corner radii. Material components read these through their system variables, so this file sets the look
+// of the whole application; page templates only add layout.
 @use '@angular/material' as mat;
 
 html {
@@ -12,27 +10,118 @@ html {
       color: (
         primary: mat.$azure-palette,
         tertiary: mat.$blue-palette,
+        theme-type: light,
       ),
-      typography: Roboto,
-      density: 0,
+      typography: (
+        plain-family: 'Inter, "Segoe UI", system-ui, -apple-system, sans-serif',
+        brand-family: 'Inter, "Segoe UI", system-ui, -apple-system, sans-serif',
+        bold-weight: 600,
+        medium-weight: 500,
+        regular-weight: 400,
+      ),
+      density: -1,
+    )
+  );
+
+  // Brand colours over the generated palette.
+  @include mat.theme-overrides(
+    (
+      primary: #1e4fd8,
+      on-primary: #ffffff,
+      primary-container: #e5ecfd,
+      on-primary-container: #0b2a6f,
+      secondary-container: #e8eef9,
+      on-secondary-container: #1e293b,
+      surface: #ffffff,
+      surface-container-lowest: #ffffff,
+      surface-container-low: #f8fafc,
+      surface-container: #f3f5f8,
+      surface-container-high: #eef1f5,
+      surface-container-highest: #e7ebf0,
+      on-surface: #0f172a,
+      on-surface-variant: #475569,
+      outline: #cbd5e1,
+      outline-variant: #e2e8f0,
+      error: #b42318,
+    )
+  );
+
+  @include mat.button-overrides(
+    (
+      filled-container-shape: 6px,
+      outlined-container-shape: 6px,
+      text-container-shape: 6px,
+      protected-container-shape: 6px,
+      tonal-container-shape: 6px,
+      filled-label-text-weight: 500,
+      outlined-label-text-weight: 500,
+      text-label-text-weight: 500,
+      outlined-outline-color: #cbd5e1,
+    )
+  );
+
+  @include mat.form-field-overrides(
+    (
+      outlined-container-shape: 6px,
+      outlined-outline-color: #cbd5e1,
+      outlined-hover-outline-color: #94a3b8,
+    )
+  );
+
+  @include mat.table-overrides(
+    (
+      background-color: #ffffff,
+      header-headline-color: #475569,
+      header-headline-size: 12px,
+      header-headline-weight: 600,
+      header-container-height: 40px,
+      row-item-container-height: 46px,
+      row-item-outline-color: #edf0f4,
+      row-item-label-text-size: 13.5px,
+    )
+  );
+
+  @include mat.paginator-overrides(
+    (
+      container-background-color: #ffffff,
+      container-text-size: 12.5px,
+    )
+  );
+
+  @include mat.menu-overrides(
+    (
+      container-shape: 8px,
+      item-label-text-size: 13.5px,
+    )
+  );
+
+  @include mat.card-overrides(
+    (
+      outlined-container-shape: 8px,
+      outlined-outline-color: #e2e8f0,
+    )
+  );
+
+  @include mat.snack-bar-overrides(
+    (
+      container-shape: 6px,
+    )
+  );
+
+  @include mat.dialog-overrides(
+    (
+      container-shape: 10px,
     )
   );
 }
 
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
   color-scheme: light;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
+  background-color: #f4f6f9;
   color: var(--mat-sys-on-surface);
   font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
   margin: 0;
   height: 100%;
 }

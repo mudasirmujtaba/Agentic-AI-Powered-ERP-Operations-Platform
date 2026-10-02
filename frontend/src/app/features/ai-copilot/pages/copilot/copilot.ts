@@ -24,6 +24,7 @@ const SUGGESTIONS = [
   selector: 'app-copilot',
   imports: [DatePipe, FormsModule, RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, AssistantMessage],
   templateUrl: './copilot.html',
+  styleUrl: './copilot.css',
 })
 export class Copilot implements OnInit {
   /** Bound from the optional `:conversationId` route param. */

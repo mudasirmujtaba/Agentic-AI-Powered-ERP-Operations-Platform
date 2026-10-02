@@ -1,4 +1,4 @@
-<app-page-header title="AI approval center" subtitle="Operations proposed by Copilot agents. Nothing runs until someone approves it." />
+<app-page-header title="Approval center" subtitle="Operations proposed by Copilot agents. Nothing runs until someone approves it." />
 
 <mat-button-toggle-group [value]="filter()" (change)="setFilter($event.value)" aria-label="Filter by status" class="mb-4">
   <mat-button-toggle value="Pending">Pending</mat-button-toggle>
@@ -19,7 +19,7 @@
 <div class="flex max-w-5xl flex-col gap-4">
   @for (action of actions(); track action.id) {
     <div>
-      <div class="mb-1 flex flex-wrap items-center justify-between gap-2 text-xs opacity-70">
+      <div class="mb-1 flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
         <span>Requested by {{ action.requestedByEmail ?? 'unknown' }} · {{ action.createdAtUtc | date: 'medium' }}</span>
         <a [routerLink]="['/ai-copilot', action.conversationId]">Open conversation</a>
       </div>
@@ -27,7 +27,7 @@
     </div>
   } @empty {
     @if (!loading()) {
-      <p class="opacity-70">No {{ filter() === 'All' ? '' : filter().toLowerCase() }} proposals.</p>
+      <p class="text-muted">No {{ filter() === 'All' ? '' : filter().toLowerCase() }} proposals.</p>
     }
   }
 </div>

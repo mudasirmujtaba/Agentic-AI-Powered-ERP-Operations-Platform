@@ -42,14 +42,14 @@ const POLL_MS = 60_000;
           <div class="py-2">
             <div class="flex items-center gap-2">
               <mat-icon class="!mr-0 shrink-0" [class]="iconClass(n)">{{ icon(n) }}</mat-icon>
-              <span class="font-medium" [class.opacity-70]="n.readAtUtc">{{ n.title }}</span>
+              <span class="font-medium" [class.text-muted]="n.readAtUtc">{{ n.title }}</span>
             </div>
-            <div class="notification-body text-xs opacity-80" [innerHTML]="n.body | markdownLite"></div>
-            <div class="text-xs opacity-60">{{ n.createdAtUtc | date: 'short' }}</div>
+            <div class="notification-body text-xs text-slate-600" [innerHTML]="n.body | markdownLite"></div>
+            <div class="text-xs text-slate-500">{{ n.createdAtUtc | date: 'short' }}</div>
           </div>
         </button>
       } @empty {
-        <p class="m-0 px-4 py-3 text-sm opacity-70">No notifications yet.</p>
+        <p class="m-0 px-4 py-3 text-sm text-muted">No notifications yet.</p>
       }
     </mat-menu>
   `,
@@ -86,7 +86,7 @@ export class NotificationBell implements OnInit {
   }
 
   protected iconClass(n: AppNotification): string {
-    return n.severity === 'Critical' ? 'text-red-700' : n.severity === 'Warning' ? 'text-amber-700' : 'text-indigo-700';
+    return n.severity === 'Critical' ? 'text-red-700' : n.severity === 'Warning' ? 'text-amber-700' : 'text-slate-500';
   }
 
   protected open(n: AppNotification): void {

@@ -109,15 +109,15 @@
       <!-- Conversation -->
       <h2 class="mb-2 mt-0 text-lg font-medium">Activity</h2>
       <ol class="m-0 mb-4 list-none space-y-3 p-0">
-        <li class="rounded-lg border border-gray-200 p-3 text-sm">
-          <div class="mb-1 text-xs opacity-70">Opened {{ t.createdAtUtc | date: 'medium' }} for {{ t.customerName }}</div>
+        <li class="panel p-3 text-sm">
+          <div class="mb-1 text-xs text-muted">Opened {{ t.createdAtUtc | date: 'medium' }} for {{ t.customerName }}</div>
           <div class="whitespace-pre-line">{{ t.description }}</div>
         </li>
         @for (comment of t.comments; track comment.id) {
-          <li class="rounded-lg border p-3 text-sm" [class]="comment.isInternal ? 'border-amber-200 bg-amber-50' : 'border-gray-200'">
+          <li class="rounded-lg border p-3 text-sm" [class]="comment.isInternal ? 'border-amber-200 bg-amber-50' : 'border-line'">
             <div class="mb-1 flex flex-wrap items-center gap-2 text-xs">
               <span class="font-medium">{{ comment.authorName }}</span>
-              <span class="opacity-70">{{ comment.createdAtUtc | date: 'medium' }}</span>
+              <span class="text-muted">{{ comment.createdAtUtc | date: 'medium' }}</span>
               @if (comment.isInternal) {
                 <app-status-badge label="Internal note" tone="warning" />
               }
@@ -134,7 +134,7 @@
       </ol>
 
       @if (isEditable()) {
-        <form [formGroup]="commentForm" (ngSubmit)="addComment()" class="rounded-lg border border-gray-200 p-3">
+        <form [formGroup]="commentForm" (ngSubmit)="addComment()" class="panel p-3">
           <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
             <mat-label>Add a comment</mat-label>
             <textarea matInput rows="3" formControlName="body"></textarea>
@@ -155,7 +155,7 @@
     <aside class="space-y-4">
       <!-- Workflow: only transitions the domain allows from the current status. -->
       @if (canManage() && t.allowedNextStatuses.length) {
-        <section class="rounded-lg border border-gray-200 p-4">
+        <section class="panel p-4">
           <h2 class="mb-3 mt-0 text-base font-medium">Status</h2>
           <div class="flex flex-wrap gap-2">
             @for (target of t.allowedNextStatuses; track target) {
@@ -183,9 +183,9 @@
       }
 
       <!-- AI summary (design doc §13) -->
-      <section class="rounded-lg border border-indigo-200 bg-indigo-50/50 p-4">
+      <section class="panel p-4">
         <div class="mb-2 flex items-center gap-2">
-          <mat-icon class="text-indigo-700">auto_awesome</mat-icon>
+          <mat-icon class="text-slate-500">insights</mat-icon>
           <h2 class="m-0 flex-1 text-base font-medium">AI summary</h2>
           @if (canManage()) {
             <button mat-stroked-button (click)="summarize()" [disabled]="summarizing()">
@@ -198,22 +198,22 @@
         }
         @if (t.aiSummary) {
           <div class="answer text-sm leading-relaxed" [innerHTML]="t.aiSummary | markdownLite"></div>
-          <p class="m-0 mt-2 text-xs opacity-60">
+          <p class="m-0 mt-2 text-xs text-slate-500">
             Generated {{ t.aiSummaryAtUtc | date: 'short' }}
             @if (t.updatedAtUtc && t.aiSummaryAtUtc && t.updatedAtUtc > t.aiSummaryAtUtc) {
               · the ticket has changed since; refresh for the latest
             }
           </p>
         } @else if (!summarizing()) {
-          <p class="m-0 text-sm opacity-70">Summarise the ticket and its history for whoever picks it up next.</p>
+          <p class="m-0 text-sm text-muted">Summarise the ticket and its history for whoever picks it up next.</p>
         }
       </section>
 
-      <dl class="m-0 grid grid-cols-2 gap-3 rounded-lg border border-gray-200 p-4 text-sm">
-        <div><dt class="opacity-70">Category</dt><dd class="m-0">{{ categories[t.category] }}</dd></div>
-        <div><dt class="opacity-70">Assigned to</dt><dd class="m-0">{{ t.assignedToName ?? 'Unassigned' }}</dd></div>
+      <dl class="m-0 grid grid-cols-2 gap-3 panel p-4 text-sm">
+        <div><dt class="text-muted">Category</dt><dd class="m-0">{{ categories[t.category] }}</dd></div>
+        <div><dt class="text-muted">Assigned to</dt><dd class="m-0">{{ t.assignedToName ?? 'Unassigned' }}</dd></div>
         <div>
-          <dt class="opacity-70">Order</dt>
+          <dt class="text-muted">Order</dt>
           <dd class="m-0">
             @if (t.salesOrderId) {
               <a [routerLink]="['/sales', t.salesOrderId]" class="font-mono">{{ t.orderNumber }}</a>
@@ -223,7 +223,7 @@
           </dd>
         </div>
         <div>
-          <dt class="opacity-70">Product</dt>
+          <dt class="text-muted">Product</dt>
           <dd class="m-0">
             @if (t.productId) {
               <a [routerLink]="['/inventory/products', t.productId]" class="font-mono">{{ t.productCode }}</a>
@@ -232,10 +232,10 @@
             }
           </dd>
         </div>
-        <div><dt class="opacity-70">Opened</dt><dd class="m-0">{{ t.createdAtUtc | date: 'medium' }}</dd></div>
-        <div><dt class="opacity-70">Last activity</dt><dd class="m-0">{{ (t.updatedAtUtc ?? t.createdAtUtc) | date: 'medium' }}</dd></div>
+        <div><dt class="text-muted">Opened</dt><dd class="m-0">{{ t.createdAtUtc | date: 'medium' }}</dd></div>
+        <div><dt class="text-muted">Last activity</dt><dd class="m-0">{{ (t.updatedAtUtc ?? t.createdAtUtc) | date: 'medium' }}</dd></div>
         @if (t.closedAtUtc) {
-          <div><dt class="opacity-70">Closed</dt><dd class="m-0">{{ t.closedAtUtc | date: 'medium' }}</dd></div>
+          <div><dt class="text-muted">Closed</dt><dd class="m-0">{{ t.closedAtUtc | date: 'medium' }}</dd></div>
         }
       </dl>
     </aside>

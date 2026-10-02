@@ -22,9 +22,9 @@ export type TicketCategory = 'General' | 'Delivery' | 'ProductDefect' | 'Billing
 
 export const SALES_ORDER_STATUSES: Record<SalesOrderStatus, StatusStyle> = {
   Draft: { label: 'Draft', tone: 'neutral' },
-  Confirmed: { label: 'Confirmed', tone: 'warning' },
-  Processing: { label: 'Processing', tone: 'warning' },
-  Shipped: { label: 'Shipped', tone: 'success' },
+  Confirmed: { label: 'Confirmed', tone: 'info' },
+  Processing: { label: 'Processing', tone: 'info' },
+  Shipped: { label: 'Shipped', tone: 'info' },
   Delivered: { label: 'Delivered', tone: 'success' },
   Cancelled: { label: 'Cancelled', tone: 'neutral' },
 };
@@ -32,8 +32,8 @@ export const SALES_ORDER_STATUSES: Record<SalesOrderStatus, StatusStyle> = {
 export const PURCHASE_ORDER_STATUSES: Record<PurchaseOrderStatus, StatusStyle> = {
   Draft: { label: 'Draft', tone: 'neutral' },
   PendingApproval: { label: 'Pending approval', tone: 'warning' },
-  Approved: { label: 'Approved', tone: 'success' },
-  Ordered: { label: 'Ordered', tone: 'success' },
+  Approved: { label: 'Approved', tone: 'info' },
+  Ordered: { label: 'Ordered', tone: 'info' },
   PartiallyReceived: { label: 'Partially received', tone: 'warning' },
   Completed: { label: 'Completed', tone: 'success' },
   Cancelled: { label: 'Cancelled', tone: 'neutral' },
@@ -41,7 +41,7 @@ export const PURCHASE_ORDER_STATUSES: Record<PurchaseOrderStatus, StatusStyle> =
 
 export const INVOICE_STATUSES: Record<InvoiceStatus, StatusStyle> = {
   Draft: { label: 'Draft', tone: 'neutral' },
-  Issued: { label: 'Issued', tone: 'warning' },
+  Issued: { label: 'Issued', tone: 'info' },
   PartiallyPaid: { label: 'Partially paid', tone: 'warning' },
   Paid: { label: 'Paid', tone: 'success' },
   Cancelled: { label: 'Cancelled', tone: 'neutral' },
@@ -58,7 +58,7 @@ export const STOCK_STATUSES: Record<StockStatus, StatusStyle> = {
 
 export const TICKET_STATUSES: Record<TicketStatus, StatusStyle> = {
   Open: { label: 'Open', tone: 'warning' },
-  InProgress: { label: 'In progress', tone: 'warning' },
+  InProgress: { label: 'In progress', tone: 'info' },
   WaitingOnCustomer: { label: 'Waiting on customer', tone: 'neutral' },
   Resolved: { label: 'Resolved', tone: 'success' },
   Closed: { label: 'Closed', tone: 'neutral' },
@@ -66,7 +66,7 @@ export const TICKET_STATUSES: Record<TicketStatus, StatusStyle> = {
 
 export const TICKET_PRIORITIES: Record<TicketPriority, StatusStyle> = {
   Low: { label: 'Low', tone: 'neutral' },
-  Medium: { label: 'Medium', tone: 'neutral' },
+  Medium: { label: 'Medium', tone: 'info' },
   High: { label: 'High', tone: 'warning' },
   Urgent: { label: 'Urgent', tone: 'danger' },
 };

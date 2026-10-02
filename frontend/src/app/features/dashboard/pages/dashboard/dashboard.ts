@@ -10,7 +10,7 @@ import { describeApiError } from '../../../../core/http/api-error';
 import { PageHeader } from '../../../../shared/components/page-header/page-header';
 import { StatusBadge } from '../../../../shared/components/status-badge/status-badge';
 import { SALES_ORDER_STATUSES, STOCK_STATUSES } from '../../../../shared/models/statuses';
-import { RevenueChart } from '../../components/revenue-chart/revenue-chart';
+import { BarChart, BarPoint } from '../../../../shared/components/bar-chart/bar-chart';
 import { DashboardApi } from '../../data/dashboard.api';
 import { DashboardSummary } from '../../data/dashboard.models';
 
@@ -26,7 +26,7 @@ interface KpiTile {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CurrencyPipe, DatePipe, RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, PageHeader, StatusBadge, RevenueChart],
+  imports: [CurrencyPipe, DatePipe, RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, PageHeader, StatusBadge, BarChart],
   templateUrl: './dashboard.html',
 })
 export class Dashboard {
@@ -37,6 +37,17 @@ export class Dashboard {
   protected readonly stockStatuses = STOCK_STATUSES;
   protected readonly summary = signal<DashboardSummary | null>(null);
   protected readonly loading = signal(true);
+
+  protected readonly revenuePoints = computed<BarPoint[]>(() =>
+    (this.summary()?.revenueByMonth ?? []).map((m) => {
+      const date = new Date(Date.UTC(m.year, m.month - 1, 1));
+      return {
+        label: date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }),
+        fullLabel: date.toLocaleString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }),
+        value: m.revenue,
+      };
+    }),
+  );
   protected readonly error = signal<string | null>(null);
   protected readonly greeting = computed(() => {
     const name = this.auth.currentUser()?.firstName;

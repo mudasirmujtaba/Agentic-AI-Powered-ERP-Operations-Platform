@@ -1,7 +1,14 @@
-import { CurrencyPipe } from '@angular/common';
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input, signal } from '@angular/core';
 
-import { MonthlyRevenue } from '../../data/dashboard.models';
+import { ChartFormat, formatCompact, formatValue } from '../../formatting/format';
+
+export interface BarPoint {
+  /** Short axis label, e.g. "Sep". */
+  label: string;
+  /** Full label for the tooltip and screen readers, e.g. "September 2026". */
+  fullLabel?: string;
+  value: number;
+}
 
 const WIDTH = 640;
 const HEIGHT = 240;
@@ -21,23 +28,23 @@ interface Bar {
 }
 
 /**
- * Single-series monthly revenue bars. Thin bars with 4px rounded data-ends anchored to the baseline,
+ * Single-series bars (monthly trends on the dashboard and in reports). Thin bars with 4px rounded data-ends anchored to the baseline,
  * recessive grid, a per-bar hover tooltip, and a screen-reader table carrying the same values.
  */
 @Component({
-  selector: 'app-revenue-chart',
-  imports: [CurrencyPipe],
+  selector: 'app-bar-chart',
+  host: { class: 'block' },
   template: `
     <div class="relative">
       <svg
-        [attr.viewBox]="'0 0 ' + width + ' ' + height"
+        [attr.viewBox]="'0 0 ' + chartWidth() + ' ' + height"
         class="block h-auto w-full"
         role="img"
         [attr.aria-label]="summary()"
         (mouseleave)="hovered.set(null)"
       >
         @for (tick of ticks(); track tick.value) {
-          <line [attr.x1]="plot.left" [attr.x2]="width - plot.right" [attr.y1]="tick.y" [attr.y2]="tick.y" class="grid-line" />
+          <line [attr.x1]="plot.left" [attr.x2]="chartWidth() - plot.right" [attr.y1]="tick.y" [attr.y2]="tick.y" class="grid-line" />
           <text [attr.x]="plot.left - 8" [attr.y]="tick.y" text-anchor="end" dominant-baseline="middle" class="axis-text">
             {{ tick.label }}
           </text>
@@ -57,25 +64,25 @@ interface Bar {
           />
         }
 
-        <line [attr.x1]="plot.left" [attr.x2]="width - plot.right" [attr.y1]="baseline" [attr.y2]="baseline" class="baseline" />
+        <line [attr.x1]="plot.left" [attr.x2]="chartWidth() - plot.right" [attr.y1]="baseline" [attr.y2]="baseline" class="baseline" />
       </svg>
 
       @if (hoveredBar(); as bar) {
         <div
           class="pointer-events-none absolute rounded-md px-3 py-2 text-xs shadow-md tooltip"
-          [style.left.%]="((bar.x + bar.width / 2) / width) * 100"
+          [style.left.%]="((bar.x + bar.width / 2) / chartWidth()) * 100"
           [style.top.%]="(bar.y / height) * 100"
         >
           <div class="font-medium">{{ bar.fullLabel }}</div>
-          <div>{{ bar.value | currency: 'USD' : 'symbol' : '1.0-0' }}</div>
+          <div>{{ display(bar.value) }}</div>
         </div>
       }
 
       <table class="sr-only">
-        <caption>Invoiced revenue by month</caption>
-        <tr><th>Month</th><th>Revenue</th></tr>
+        <caption>{{ caption() }}</caption>
+        <tr><th>Period</th><th>Value</th></tr>
         @for (bar of bars(); track bar.label) {
-          <tr><td>{{ bar.fullLabel }}</td><td>{{ bar.value | currency: 'USD' : 'symbol' : '1.0-0' }}</td></tr>
+          <tr><td>{{ bar.fullLabel }}</td><td>{{ display(bar.value) }}</td></tr>
         }
       </table>
     </div>
@@ -85,7 +92,7 @@ interface Bar {
     .bar.dimmed { opacity: 0.45; }
     .grid-line { stroke: var(--mat-sys-outline-variant); stroke-width: 1; }
     .baseline { stroke: var(--mat-sys-outline); stroke-width: 1; }
-    .axis-text { fill: var(--mat-sys-on-surface-variant); font-size: 12px; }
+    .axis-text { fill: #64748b; font-size: 11.5px; }
     .tooltip {
       transform: translate(-50%, calc(-100% - 8px));
       background: var(--mat-sys-inverse-surface);
@@ -94,40 +101,55 @@ interface Bar {
     }
   `,
 })
-export class RevenueChart {
-  readonly data = input.required<MonthlyRevenue[]>();
+export class BarChart {
+  readonly points = input.required<BarPoint[]>();
+  readonly format = input<ChartFormat>('currency');
+  readonly caption = input('Values by period');
 
-  protected readonly width = WIDTH;
+  /** Drawn at the container's real width, so text and bars keep their size instead of scaling with the panel. */
+  protected readonly chartWidth = signal(WIDTH);
   protected readonly height = HEIGHT;
+
+  constructor() {
+    const host = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      const observer = new ResizeObserver(([entry]) => {
+        const width = Math.round(entry.contentRect.width);
+        if (width > 0) this.chartWidth.set(Math.max(320, width));
+      });
+      observer.observe(host);
+      destroyRef.onDestroy(() => observer.disconnect());
+    });
+  }
   protected readonly plot = PLOT;
   protected readonly baseline = HEIGHT - PLOT.bottom;
   protected readonly hovered = signal<number | null>(null);
 
-  private readonly maxValue = computed(() => niceCeiling(Math.max(1, ...this.data().map((d) => d.revenue))));
+  private readonly maxValue = computed(() => niceCeiling(Math.max(1, ...this.points().map((d) => d.value))));
 
   protected readonly ticks = computed(() => {
     const max = this.maxValue();
     return [0, 0.25, 0.5, 0.75, 1].map((fraction) => ({
       value: max * fraction,
       y: this.yFor(max * fraction),
-      label: compactCurrency(max * fraction),
+      label: formatCompact(max * fraction, this.format()),
     }));
   });
 
   protected readonly bars = computed<Bar[]>(() => {
-    const data = this.data();
-    const bandWidth = (WIDTH - PLOT.left - PLOT.right) / Math.max(1, data.length);
+    const data = this.points();
+    const bandWidth = (this.chartWidth() - PLOT.left - PLOT.right) / Math.max(1, data.length);
     const barWidth = Math.min(36, bandWidth * 0.45);
 
     return data.map((d, i) => {
-      const date = new Date(Date.UTC(d.year, d.month - 1, 1));
       const bandX = PLOT.left + i * bandWidth;
       const x = bandX + (bandWidth - barWidth) / 2;
-      const y = this.yFor(d.revenue);
+      const y = this.yFor(d.value);
       return {
-        label: date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }),
-        fullLabel: date.toLocaleString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }),
-        value: d.revenue,
+        label: d.label,
+        fullLabel: d.fullLabel ?? d.label,
+        value: d.value,
         x,
         width: barWidth,
         bandX,
@@ -144,11 +166,15 @@ export class RevenueChart {
   });
 
   protected readonly summary = computed(() =>
-    'Invoiced revenue by month: ' +
+    `${this.caption()}: ` +
     this.bars()
-      .map((b) => `${b.fullLabel} ${compactCurrency(b.value)}`)
+      .map((b) => `${b.fullLabel} ${formatCompact(b.value, this.format())}`)
       .join(', '),
   );
+
+  protected display(value: number): string {
+    return formatValue(value, this.format());
+  }
 
   private yFor(value: number): number {
     const plotHeight = this.baseline - PLOT.top;
@@ -177,8 +203,4 @@ function niceCeiling(value: number): number {
   const normalized = value / magnitude;
   const step = [1, 2, 2.5, 5, 10].find((s) => normalized <= s) ?? 10;
   return step * magnitude;
-}
-
-function compactCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 }).format(value);
 }

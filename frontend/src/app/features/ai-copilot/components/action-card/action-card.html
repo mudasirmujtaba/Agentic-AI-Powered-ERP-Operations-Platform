@@ -11,11 +11,11 @@
   </header>
 
   @for (order of action().input.orders; track order.supplierId) {
-    <div class="mb-3 overflow-x-auto rounded-md border border-gray-200 bg-white">
-      <div class="border-b border-gray-200 px-3 py-2 text-sm font-medium">
-        {{ order.supplierName }} <span class="font-normal opacity-70">· receive at {{ order.warehouseCode }}</span>
+    <div class="mb-3 overflow-x-auto rounded-md border border-line bg-white">
+      <div class="border-b border-line px-3 py-2 text-sm font-medium">
+        {{ order.supplierName }} <span class="font-normal text-muted">· receive at {{ order.warehouseCode }}</span>
       </div>
-      <table class="w-full border-collapse text-sm">
+      <table class="data-table">
         <thead>
           <tr class="text-left">
             <th class="px-3 py-2 font-medium">Product</th>
@@ -27,16 +27,16 @@
         </thead>
         <tbody>
           @for (line of order.lines; track line.productId) {
-            <tr class="border-t border-gray-100 align-top">
+            <tr class="border-t border-slate-100 align-top">
               <td class="px-3 py-2"><span class="font-mono">{{ line.productCode }}</span> {{ line.productName }}</td>
-              <td class="px-3 py-2 text-xs opacity-80">{{ line.reason }}</td>
+              <td class="px-3 py-2 text-xs text-slate-600">{{ line.reason }}</td>
               <td class="px-3 py-2 text-right">
                 @if (canDecide()) {
                   <input
                     type="number"
                     min="0"
                     step="10"
-                    class="w-20 rounded border border-gray-300 px-2 py-1 text-right"
+                    class="w-20 rounded border border-slate-300 px-2 py-1 text-right"
                     [attr.aria-label]="'Quantity for ' + line.productCode"
                     [ngModel]="quantities()[line.productId]"
                     (ngModelChange)="setQuantity(line.productId, $event)"
@@ -72,16 +72,16 @@
       </button>
       <button mat-stroked-button (click)="reject()" [disabled]="busy()">Reject</button>
     </div>
-    <p class="m-0 mt-2 text-xs opacity-70">
+    <p class="m-0 mt-2 text-xs text-muted">
       Edit quantities to modify the proposal. Approval creates draft purchase orders through the normal purchasing rules;
       drafts over $10,000 still need a manager's approval when submitted.
     </p>
   } @else if (action().status === 'Pending') {
-    <p class="m-0 text-sm opacity-80">Waiting for someone with purchasing rights to review this.</p>
+    <p class="m-0 text-sm text-slate-600">Waiting for someone with purchasing rights to review this.</p>
   }
 
   @if (action().decision; as decision) {
-    <p class="m-0 mt-2 text-xs opacity-70">
+    <p class="m-0 mt-2 text-xs text-muted">
       {{ decision.status }} by {{ decision.decidedByEmail ?? 'unknown' }} on {{ decision.decidedAtUtc | date: 'medium' }}
       @if (decision.comments) { · "{{ decision.comments }}" }
     </p>

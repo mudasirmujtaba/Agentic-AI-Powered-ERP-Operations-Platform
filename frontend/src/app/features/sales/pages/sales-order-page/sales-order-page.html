@@ -55,7 +55,7 @@
   </div>
 
   @if (showShipForm()) {
-    <form [formGroup]="shipForm" (ngSubmit)="ship()" class="mb-4 flex flex-wrap items-start gap-3 rounded-lg border border-gray-200 p-4">
+    <form [formGroup]="shipForm" (ngSubmit)="ship()" class="mb-4 flex flex-wrap items-start gap-3 panel p-4">
       <mat-form-field appearance="outline">
         <mat-label>Carrier</mat-label>
         <input matInput formControlName="carrier" placeholder="UPS" />
@@ -68,23 +68,23 @@
     </form>
   }
 
-  <dl class="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-gray-200 p-4 text-sm md:grid-cols-4">
-    <div><dt class="opacity-70">Ordered</dt><dd class="m-0">{{ o.orderDateUtc | date: 'medium' }}</dd></div>
-    <div><dt class="opacity-70">Required by</dt><dd class="m-0">{{ (o.requiredDateUtc | date: 'mediumDate') ?? '—' }}</dd></div>
-    <div><dt class="opacity-70">Warehouse</dt><dd class="m-0">{{ o.warehouseName }}</dd></div>
-    <div><dt class="opacity-70">Total</dt><dd class="m-0 text-base font-medium">{{ o.totalAmount | currency: 'USD' }}</dd></div>
+  <dl class="mb-6 grid grid-cols-2 gap-4 panel p-4 text-sm md:grid-cols-4">
+    <div><dt class="text-muted">Ordered</dt><dd class="m-0">{{ o.orderDateUtc | date: 'medium' }}</dd></div>
+    <div><dt class="text-muted">Required by</dt><dd class="m-0">{{ (o.requiredDateUtc | date: 'mediumDate') ?? '—' }}</dd></div>
+    <div><dt class="text-muted">Warehouse</dt><dd class="m-0">{{ o.warehouseName }}</dd></div>
+    <div><dt class="text-muted">Total</dt><dd class="m-0 text-base font-medium">{{ o.totalAmount | currency: 'USD' }}</dd></div>
     @if (o.confirmedAtUtc) {
-      <div><dt class="opacity-70">Confirmed</dt><dd class="m-0">{{ o.confirmedAtUtc | date: 'medium' }}</dd></div>
+      <div><dt class="text-muted">Confirmed</dt><dd class="m-0">{{ o.confirmedAtUtc | date: 'medium' }}</dd></div>
     }
     @if (o.shippedAtUtc) {
-      <div><dt class="opacity-70">Shipped</dt><dd class="m-0">{{ o.shippedAtUtc | date: 'medium' }}</dd></div>
-      <div><dt class="opacity-70">Carrier / tracking</dt><dd class="m-0">{{ o.carrier ?? '—' }} {{ o.trackingNumber }}</dd></div>
+      <div><dt class="text-muted">Shipped</dt><dd class="m-0">{{ o.shippedAtUtc | date: 'medium' }}</dd></div>
+      <div><dt class="text-muted">Carrier / tracking</dt><dd class="m-0">{{ o.carrier ?? '—' }} {{ o.trackingNumber }}</dd></div>
     }
     @if (o.deliveredAtUtc) {
-      <div><dt class="opacity-70">Delivered</dt><dd class="m-0">{{ o.deliveredAtUtc | date: 'medium' }}</dd></div>
+      <div><dt class="text-muted">Delivered</dt><dd class="m-0">{{ o.deliveredAtUtc | date: 'medium' }}</dd></div>
     }
     @if (o.cancelledAtUtc) {
-      <div><dt class="opacity-70">Cancelled</dt><dd class="m-0">{{ o.cancelledAtUtc | date: 'medium' }}</dd></div>
+      <div><dt class="text-muted">Cancelled</dt><dd class="m-0">{{ o.cancelledAtUtc | date: 'medium' }}</dd></div>
     }
   </dl>
 }
@@ -136,10 +136,10 @@
   </form>
 } @else if (order(); as o) {
   <h2 class="mb-2 mt-0 text-lg font-medium">Lines</h2>
-  <div class="overflow-x-auto rounded-lg border border-gray-200">
-    <table class="w-full border-collapse text-sm">
+  <div class="overflow-x-auto panel">
+    <table class="data-table">
       <thead>
-        <tr class="border-b border-gray-200 text-left">
+        <tr class="border-b border-line text-left">
           <th class="p-3 font-medium">Product</th>
           <th class="p-3 text-right font-medium">Quantity</th>
           <th class="p-3 text-right font-medium">Unit price</th>
@@ -148,7 +148,7 @@
       </thead>
       <tbody>
         @for (line of o.lines; track line.id) {
-          <tr class="border-b border-gray-100">
+          <tr class="border-b border-slate-100">
             <td class="p-3">
               <a [routerLink]="['/inventory/products', line.productId]" class="font-mono">{{ line.productCode }}</a>
               {{ line.productName }}
@@ -168,6 +168,6 @@
     </table>
   </div>
   @if (o.notes) {
-    <p class="mt-4 text-sm"><span class="opacity-70">Notes:</span> {{ o.notes }}</p>
+    <p class="mt-4 text-sm"><span class="text-muted">Notes:</span> {{ o.notes }}</p>
   }
 }

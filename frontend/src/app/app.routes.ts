@@ -57,6 +57,15 @@ export const routes: Routes = [
         loadComponent: () => import('./features/audit/pages/audit-log/audit-log').then((m) => m.AuditLog),
       },
       {
+        path: 'reports',
+        loadComponent: () => import('./features/reports/pages/reports/reports').then((m) => m.Reports),
+      },
+      {
+        path: 'system-health',
+        canActivate: [roleGuard(WriteAccess.jobs)],
+        loadComponent: () => import('./features/system-health/pages/system-health/system-health').then((m) => m.SystemHealth),
+      },
+      {
         path: 'automation',
         loadComponent: () => import('./features/automation/pages/automation/automation').then((m) => m.Automation),
       },

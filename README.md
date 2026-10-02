@@ -26,6 +26,8 @@ and drafts purchase orders that a person must approve before anything is created
 | **Approval center** | Every AI-proposed operation in one place: approve, reject, or modify quantities before approving. |
 | **Automation** | Scheduled jobs (Hangfire): a **nightly inventory risk scan** at 02:00 that runs the Inventory agent as a restricted automation account and stores an AI-written briefing; **payment reminders** at 7, 14 and 30 days overdue; and **credit holds** for invoices over 60 days overdue, released once the account is current (manual holds are never touched). Admins and managers can see job history and run jobs on demand. |
 | **Notifications** | An in-app bell with role-targeted alerts from the jobs (stock risk to inventory, reminders and holds to finance and sales), linking to the relevant page. |
+| **Reports** | Sales, inventory, procurement, finance and AI-operations reports for any period: KPIs, a monthly trend and detail tables with CSV export. Each function sees its own reports; leadership sees all. |
+| **System health** | Live API latency, database time, AI request and agent duration, token usage, tool failures and job runs (admins and managers). |
 | **Audit log** | Every consequential action (confirmations, shipments, approvals, payments, stock adjustments, AI proposals and decisions), with who did it and whether AI was involved. |
 
 ### The Copilot's agents
@@ -88,6 +90,11 @@ ai-service/
 Other engineering notes:
 - **Stock ledger.** All stock goes through a single `StockLedger`; a check constraint keeps `0 ≤ reserved ≤ on hand`.
 - **Error mapping.** Errors map to 400 (validation), 404, 409 (duplicates), 422 (business rules) and 503 (AI service down); client-aborted requests are not logged as server errors.
+- **Observability.** Serilog structured logs (JSON in containers) carry the trace id. OpenTelemetry traces and
+  metrics cover ASP.NET Core, HttpClient, the runtime, and OpsPilot's own instruments: AI request duration, tokens,
+  agent time, tool outcomes, DB command duration with slow-query warnings, and job duration. They are exported over
+  OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. Try `docker compose --profile observability up` with
+  `OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317`, then open Jaeger at http://localhost:16686.
 - **Dates.** All timestamps are stored and returned as UTC (`...Z`); the UI shows them in the viewer's time zone.
 - **Resilience.** EF Core retries transient SQL failures. Scheduled jobs are idempotent: reminders track the stage sent, and holds record whether policy placed them.
 - **Job security.** Jobs that call the AI service use a short-lived token for `automation@opspilot.local`, which has no password and only the InventoryManager role, so agents read the ERP under normal role checks. Hangfire's own dashboard (`/hangfire`) is local-only in Development.
@@ -152,9 +159,9 @@ Compose runs four containers:
 
 | Suite | Command | Count |
 |---|---|---|
-| Backend | `dotnet test` in `backend/` | 56 |
-| AI service | `uv run pytest` in `ai-service/` | 25 |
-| Frontend | `npx ng test --watch=false` in `frontend/` | 15 |
+| Backend | `dotnet test` in `backend/` | 60 |
+| AI service | `uv run pytest` in `ai-service/` | 26 |
+| Frontend | `npx ng test --watch=false` in `frontend/` | 17 |
 | AI evaluation | `uv run python -m evals.run` in `ai-service/` (needs the API, AI service and `OPSPILOT_PASSWORD`) | 12 cases |
 
 The AI evaluation (`ai-service/evals/`) runs real questions as different users against the live stack. It checks
@@ -203,8 +210,8 @@ All accounts use the password you set in `Seed:AdminPassword`.
 
 - **Email delivery** for payment reminders (they are recorded and notified in-app today).
 - **AI evaluation in CI:** run the evaluation set on a schedule against a staging stack.
-- **Hardening:** refresh tokens, optimistic concurrency on stock rows, OpenTelemetry tracing across API and agents,
-  and a deployment stage in CI.
+- **Hardening:** refresh tokens, optimistic concurrency on stock rows, OpenTelemetry SDK spans inside the Python
+  agents (today they join the trace via `traceparent` log correlation), and a deployment stage in CI.
 
 ## Troubleshooting
 

@@ -1,0 +1,111 @@
+<app-page-header title="Reports" subtitle="Business performance by function for a chosen period">
+  <mat-form-field appearance="outline" class="w-44" subscriptSizing="dynamic">
+    <mat-label>Period</mat-label>
+    <mat-select [value]="preset()" (selectionChange)="setPreset($event.value)">
+      @for (p of presets; track p.value) {
+        <mat-option [value]="p.value">{{ p.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  @if (preset() === 'custom') {
+    <mat-form-field appearance="outline" class="w-40" subscriptSizing="dynamic">
+      <mat-label>From</mat-label>
+      <input matInput type="date" [ngModel]="from()" (ngModelChange)="from.set($event)" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="w-40" subscriptSizing="dynamic">
+      <mat-label>To</mat-label>
+      <input matInput type="date" [ngModel]="to()" (ngModelChange)="to.set($event)" />
+    </mat-form-field>
+    <button mat-flat-button (click)="applyCustom()">Apply</button>
+  }
+</app-page-header>
+
+<nav class="tabs" aria-label="Reports">
+  @for (key of available(); track key) {
+    <button type="button" class="tab" [class.active]="active() === key" [attr.aria-current]="active() === key ? 'page' : null" (click)="select(key)">
+      {{ labels[key].title }}
+    </button>
+  }
+</nav>
+
+@if (error(); as message) {
+  <p class="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-800" role="alert">{{ message }}</p>
+}
+
+@if (loading()) {
+  <mat-progress-bar mode="indeterminate" class="mb-4" />
+}
+
+@if (report(); as r) {
+  <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+    <p class="m-0 text-sm text-muted">{{ labels[r.key].description }}</p>
+    <p class="m-0 text-xs text-muted">
+      {{ r.from | date: 'mediumDate' }} – {{ r.to | date: 'mediumDate' }} · generated {{ r.generatedAtUtc | date: 'short' }}
+    </p>
+  </div>
+
+  <section class="mb-5 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5" aria-label="Key figures">
+    @for (kpi of r.kpis; track kpi.label) {
+      <div class="kpi">
+        <span class="kpi-label">{{ kpi.label }}</span>
+        <span class="kpi-value">{{ format(kpi.value, kpi.format) }}</span>
+        @if (kpi.hint) {
+          <span class="kpi-hint">{{ kpi.hint }}</span>
+        }
+      </div>
+    }
+  </section>
+
+  @if (r.trend; as trend) {
+    <section class="panel mb-5">
+      <div class="panel-header">
+        <h2 class="panel-title">{{ trend.title }}</h2>
+      </div>
+      <div class="panel-body">
+        <app-bar-chart [points]="trendPoints()" [format]="trendFormat()" [caption]="trend.title" />
+      </div>
+    </section>
+  }
+
+  <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+    @for (table of r.tables; track table.title) {
+      <section class="panel overflow-hidden" [class.xl:col-span-2]="table.columns.length > 4">
+        <div class="panel-header">
+          <h2 class="panel-title">{{ table.title }}</h2>
+          @if (table.rows.length) {
+            <button mat-stroked-button (click)="exportCsv(table)">
+              <mat-icon>download</mat-icon>
+              Export CSV
+            </button>
+          }
+        </div>
+        @if (table.rows.length) {
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  @for (col of table.columns; track col.key) {
+                    <th [class.text-right]="numeric(col.format)">{{ col.label }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of table.rows; track $index) {
+                  <tr>
+                    @for (col of table.columns; track col.key) {
+                      <td [class.text-right]="numeric(col.format)" [class.numeric]="numeric(col.format)">{{ cell(row[col.key], col.format) }}</td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="m-0 p-4 text-sm text-muted">{{ table.emptyText ?? 'No data for this period.' }}</p>
+        }
+      </section>
+    }
+  </div>
+} @else if (!loading() && !error() && !available().length) {
+  <p class="text-sm text-muted">No reports are available for your role.</p>
+}

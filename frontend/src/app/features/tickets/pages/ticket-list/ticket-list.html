@@ -7,36 +7,36 @@
 
 @if (stats(); as s) {
   <div class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-    <button type="button" class="flex flex-col rounded-lg border border-gray-200 bg-transparent p-3 text-left text-inherit cursor-pointer transition-colors hover:bg-gray-50" (click)="showTile('open')">
-      <span class="text-sm opacity-70">Open</span>
+    <button type="button" class="flex flex-col panel p-3 text-left text-inherit cursor-pointer transition-colors hover:bg-slate-50" (click)="showTile('open')">
+      <span class="text-sm text-muted">Open</span>
       <span class="mt-1 text-2xl font-medium tracking-tight">{{ s.open }}</span>
     </button>
-    <button type="button" class="flex flex-col rounded-lg border border-gray-200 bg-transparent p-3 text-left text-inherit cursor-pointer transition-colors hover:bg-gray-50" (click)="showTile('urgent')">
-      <span class="text-sm opacity-70">Urgent &amp; open</span>
+    <button type="button" class="flex flex-col panel p-3 text-left text-inherit cursor-pointer transition-colors hover:bg-slate-50" (click)="showTile('urgent')">
+      <span class="text-sm text-muted">Urgent &amp; open</span>
       <span class="mt-1 text-2xl font-medium tracking-tight" [class.text-red-700]="s.urgent > 0">{{ s.urgent }}</span>
     </button>
-    <div class="flex flex-col rounded-lg border border-gray-200 bg-transparent p-3 text-left text-inherit">
-      <span class="text-sm opacity-70">Unassigned</span>
+    <div class="flex flex-col panel p-3 text-left text-inherit">
+      <span class="text-sm text-muted">Unassigned</span>
       <span class="mt-1 text-2xl font-medium tracking-tight">{{ s.unassigned }}</span>
     </div>
-    <button type="button" class="flex flex-col rounded-lg border border-gray-200 bg-transparent p-3 text-left text-inherit cursor-pointer transition-colors hover:bg-gray-50" (click)="showTile('mine')">
-      <span class="text-sm opacity-70">Assigned to me</span>
+    <button type="button" class="flex flex-col panel p-3 text-left text-inherit cursor-pointer transition-colors hover:bg-slate-50" (click)="showTile('mine')">
+      <span class="text-sm text-muted">Assigned to me</span>
       <span class="mt-1 text-2xl font-medium tracking-tight">{{ s.assignedToMe }}</span>
     </button>
-    <div class="flex flex-col rounded-lg border border-gray-200 bg-transparent p-3 text-left text-inherit">
-      <span class="text-sm opacity-70">Resolved (30 days)</span>
+    <div class="flex flex-col panel p-3 text-left text-inherit">
+      <span class="text-sm text-muted">Resolved (30 days)</span>
       <span class="mt-1 text-2xl font-medium tracking-tight">{{ s.resolvedLast30Days }}</span>
     </div>
   </div>
 }
 
 <!-- AI: recurring problems across recent tickets (design doc §13). -->
-<section class="mb-4 rounded-lg border border-indigo-200 bg-indigo-50/50 p-4">
+<section class="mb-4 panel p-4">
   <div class="flex flex-wrap items-center gap-3">
-    <mat-icon class="text-indigo-700">auto_awesome</mat-icon>
+    <mat-icon class="text-slate-500">insights</mat-icon>
     <div class="min-w-0 flex-1">
       <h2 class="m-0 text-base font-medium">Recurring problems</h2>
-      <p class="m-0 text-sm opacity-70">AI analysis of recent tickets for patterns by product, category and customer.</p>
+      <p class="m-0 text-sm text-muted">AI analysis of recent tickets for patterns by product, category and customer.</p>
     </div>
     <mat-form-field appearance="outline" class="w-36" subscriptSizing="dynamic">
       <mat-label>Period</mat-label>
@@ -60,7 +60,7 @@
   }
   @if (insights(); as result) {
     <div class="answer mt-3 text-sm leading-relaxed" [innerHTML]="result.content | markdownLite"></div>
-    <p class="m-0 mt-2 text-xs opacity-60">
+    <p class="m-0 mt-2 text-xs text-slate-500">
       AI-generated from {{ result.ticketsAnalysed }} tickets · {{ result.generatedAtUtc | date: 'short' }} · verify before acting
     </p>
   }
@@ -107,7 +107,7 @@
   <mat-slide-toggle [checked]="mine()" (change)="setMine($event.checked)">Assigned to me</mat-slide-toggle>
 </div>
 
-<div class="mt-4 overflow-x-auto rounded-lg border border-gray-200">
+<div class="mt-4 overflow-x-auto panel">
   @if (list.loading()) {
     <mat-progress-bar mode="indeterminate" />
   }
@@ -127,10 +127,10 @@
       <td mat-cell *matCellDef="let t">
         {{ t.subject }}
         @if (t.productCode) {
-          <span class="ml-1 font-mono text-xs opacity-60">{{ t.productCode }}</span>
+          <span class="ml-1 font-mono text-xs text-slate-500">{{ t.productCode }}</span>
         }
         @if (t.commentCount) {
-          <span class="ml-1 whitespace-nowrap text-xs opacity-60">· {{ t.commentCount }} {{ t.commentCount === 1 ? 'comment' : 'comments' }}</span>
+          <span class="ml-1 whitespace-nowrap text-xs text-slate-500">· {{ t.commentCount }} {{ t.commentCount === 1 ? 'comment' : 'comments' }}</span>
         }
       </td>
     </ng-container>
@@ -165,7 +165,7 @@
         @if (t.assignedToName) {
           {{ t.assignedToName }}
         } @else {
-          <span class="opacity-60">Unassigned</span>
+          <span class="text-slate-500">Unassigned</span>
         }
       </td>
     </ng-container>
@@ -176,9 +176,9 @@
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="columns"></tr>
-    <tr mat-row *matRowDef="let row; columns: columns" (click)="open(row)" class="cursor-pointer hover:bg-gray-50"></tr>
+    <tr mat-row *matRowDef="let row; columns: columns" (click)="open(row)" class="cursor-pointer hover:bg-slate-50"></tr>
     <tr class="mat-row" *matNoDataRow>
-      <td class="p-4 text-center opacity-70" [attr.colspan]="columns.length">
+      <td class="p-4 text-center text-muted" [attr.colspan]="columns.length">
         {{ list.loading() ? 'Loading…' : 'No tickets match your filters.' }}
       </td>
     </tr>

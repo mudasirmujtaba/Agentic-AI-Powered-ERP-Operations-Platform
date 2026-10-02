@@ -1,40 +1,56 @@
-<div class="login-page">
-  <mat-card class="login-card">
-    <mat-card-header>
-      <mat-card-title>OpsPilot</mat-card-title>
-      <mat-card-subtitle>Sign in to continue</mat-card-subtitle>
-    </mat-card-header>
+<div class="login">
+  <section class="brand-panel" aria-hidden="true">
+    <div class="brand-row">
+      <span class="brand-mark">OP</span>
+      <span class="brand-name">OpsPilot</span>
+    </div>
 
-    <mat-card-content>
-      <form [formGroup]="form" (ngSubmit)="submit()">
-        <mat-form-field appearance="outline" class="full-width">
+    <div class="pitch">
+      <h2>Run sales, supply chain and finance from one place.</h2>
+      <p>
+        Orders, inventory, purchasing, invoicing and service in a single system of record, with an operations
+        assistant that answers from your live data and never changes anything without approval.
+      </p>
+      <ul>
+        <li>Role-based access across six business functions</li>
+        <li>Approval workflows and a complete audit trail</li>
+        <li>Scheduled risk scans, reminders and credit control</li>
+      </ul>
+    </div>
+
+    <div class="brand-foot">© {{ year }} OpsPilot</div>
+  </section>
+
+  <section class="form-panel">
+    <div class="form-card">
+      <h1>Sign in</h1>
+      <p class="lead">Use your company account to continue.</p>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <mat-form-field appearance="outline" class="w-full">
           <mat-label>Email</mat-label>
           <input matInput type="email" formControlName="email" autocomplete="username" />
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width">
+        <mat-form-field appearance="outline" class="w-full">
           <mat-label>Password</mat-label>
           <input matInput type="password" formControlName="password" autocomplete="current-password" />
         </mat-form-field>
 
         @if (errorMessage()) {
-          <p class="error">{{ errorMessage() }}</p>
+          <p class="error" role="alert">{{ errorMessage() }}</p>
         }
 
-        <button
-          mat-flat-button
-          color="primary"
-          type="submit"
-          class="full-width"
-          [disabled]="form.invalid || isSubmitting()"
-        >
+        <button mat-flat-button type="submit" class="submit" [disabled]="form.invalid || isSubmitting()">
           @if (isSubmitting()) {
-            <mat-spinner diameter="20" />
+            <mat-spinner diameter="18" />
           } @else {
             Sign in
           }
         </button>
       </form>
-    </mat-card-content>
-  </mat-card>
+
+      <p class="help">Trouble signing in? Contact your OpsPilot administrator.</p>
+    </div>
+  </section>
 </div>

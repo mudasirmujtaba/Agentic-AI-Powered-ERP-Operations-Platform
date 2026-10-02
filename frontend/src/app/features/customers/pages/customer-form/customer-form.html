@@ -83,12 +83,12 @@
     </div>
 
     @if (addresses.length === 0) {
-      <p class="text-sm opacity-70">No addresses yet.</p>
+      <p class="text-sm text-muted">No addresses yet.</p>
     }
 
     <div formArrayName="addresses" class="flex flex-col gap-3">
       @for (address of addresses.controls; track address; let i = $index) {
-        <div [formGroupName]="i" class="rounded-lg border border-gray-200 p-4">
+        <div [formGroupName]="i" class="panel p-4">
           <div class="grid grid-cols-1 gap-x-4 md:grid-cols-3">
             <mat-form-field appearance="outline">
               <mat-label>Type</mat-label>

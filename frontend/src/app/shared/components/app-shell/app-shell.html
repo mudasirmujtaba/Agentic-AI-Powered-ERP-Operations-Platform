@@ -1,29 +1,74 @@
-<mat-sidenav-container class="shell-container">
-  <mat-sidenav mode="side" opened class="shell-nav">
-    <mat-nav-list>
-      @for (link of navLinks(); track link.path) {
-        <a mat-list-item [routerLink]="link.path" routerLinkActive="active-link" [class.pl-8]="link.child">
-          <span [class.text-sm]="link.child">{{ link.label }}</span>
-        </a>
-      }
-    </mat-nav-list>
-  </mat-sidenav>
+<div class="shell">
+  <aside class="sidebar" aria-label="Main navigation">
+    <a routerLink="/dashboard" class="brand" aria-label="OpsPilot home">
+      <span class="brand-mark" aria-hidden="true">OP</span>
+      <span class="brand-text">
+        <span class="brand-name">OpsPilot</span>
+        <span class="brand-sub">Operations Platform</span>
+      </span>
+    </a>
 
-  <mat-sidenav-content>
-    <mat-toolbar color="primary" class="shell-toolbar">
-      <span>OpsPilot</span>
-      <span class="spacer"></span>
-      @if (authService.currentUser(); as user) {
-        <span class="user-email">{{ user.email }}</span>
+    <nav class="nav">
+      @for (group of groups(); track group.label) {
+        <div class="nav-group">
+          <div class="nav-group-label">{{ group.label }}</div>
+          @for (link of group.links; track link.path) {
+            <a
+              class="nav-link"
+              [routerLink]="link.path"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: !!link.exact }"
+              #rla="routerLinkActive"
+              [attr.aria-current]="rla.isActive ? 'page' : null"
+            >
+              <mat-icon class="nav-icon">{{ link.icon }}</mat-icon>
+              <span>{{ link.label }}</span>
+            </a>
+          }
+        </div>
       }
-      <app-notification-bell />
-      <button mat-icon-button (click)="logout()" aria-label="Log out">
-        <mat-icon>logout</mat-icon>
-      </button>
-    </mat-toolbar>
+    </nav>
 
-    <div class="shell-content">
+    <div class="sidebar-footer">v1.0 · {{ roleLabel() }}</div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="context">
+        @if (section(); as s) {
+          <span class="context-group">{{ s.group }}</span>
+          <mat-icon class="context-sep" aria-hidden="true">chevron_right</mat-icon>
+          <span class="context-page">{{ s.label }}</span>
+        }
+      </div>
+
+      <div class="topbar-actions">
+        <app-notification-bell />
+        <button type="button" class="user-button" [matMenuTriggerFor]="userMenu" aria-label="Account menu">
+          <span class="avatar" aria-hidden="true">{{ initials() }}</span>
+          <span class="user-text">
+            <span class="user-name">{{ displayName() }}</span>
+            <span class="user-role">{{ roleLabel() }}</span>
+          </span>
+          <mat-icon class="user-caret" aria-hidden="true">expand_more</mat-icon>
+        </button>
+        <mat-menu #userMenu="matMenu" xPosition="before">
+          @if (authService.currentUser(); as user) {
+            <div class="menu-identity" role="presentation">
+              <div class="font-medium">{{ displayName() }}</div>
+              <div class="text-xs muted">{{ user.email }}</div>
+            </div>
+          }
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Sign out</span>
+          </button>
+        </mat-menu>
+      </div>
+    </header>
+
+    <main class="content">
       <router-outlet />
-    </div>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+    </main>
+  </div>
+</div>

@@ -305,8 +305,21 @@ public class ReportService(IApplicationDbContext db) : IReportService
             ]);
     }
 
+    private static readonly Dictionary<string, string> IntentLabels = new()
+    {
+        ["erp_query"] = "ERP query",
+        ["order_investigation"] = "Order investigation",
+        ["inventory_risk"] = "Inventory intelligence",
+        ["purchase_recommendation"] = "Procurement",
+        ["policy"] = "Policy (RAG)",
+        ["general"] = "General",
+        ["approval_outcome"] = "Approval outcome",
+        ["error"] = "Failed run",
+    };
+
     private static string Humanize(string intent) =>
-        CultureInfo.InvariantCulture.TextInfo.ToTitleCase(intent.Replace('_', ' '));
+        IntentLabels.TryGetValue(intent, out var label) ? label
+            : CultureInfo.InvariantCulture.TextInfo.ToTitleCase(intent.Replace('_', ' '));
 
     private static ReportTable Table(string title, IReadOnlyList<ReportColumn> columns,
         IEnumerable<IReadOnlyDictionary<string, object?>> rows, string? emptyText = null) =>

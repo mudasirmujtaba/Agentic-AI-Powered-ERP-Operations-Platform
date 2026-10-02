@@ -11,7 +11,7 @@
   <input matInput placeholder="Code or name" (input)="list.onSearch($any($event.target).value)" />
 </mat-form-field>
 
-<div class="mt-4 overflow-x-auto rounded-lg border border-gray-200">
+<div class="mt-4 overflow-x-auto panel">
   @if (list.loading()) {
     <mat-progress-bar mode="indeterminate" />
   }
@@ -54,9 +54,9 @@
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="columns"></tr>
-    <tr mat-row *matRowDef="let row; columns: columns" (click)="open(row)" class="cursor-pointer hover:bg-gray-50"></tr>
+    <tr mat-row *matRowDef="let row; columns: columns" (click)="open(row)" class="cursor-pointer hover:bg-slate-50"></tr>
     <tr class="mat-row" *matNoDataRow>
-      <td class="p-4 text-center opacity-70" [attr.colspan]="columns.length">
+      <td class="p-4 text-center text-muted" [attr.colspan]="columns.length">
         {{ list.loading() ? 'Loading…' : 'No suppliers match your search.' }}
       </td>
     </tr>

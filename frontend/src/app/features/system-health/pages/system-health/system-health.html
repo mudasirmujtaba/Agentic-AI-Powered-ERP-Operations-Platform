@@ -1,0 +1,164 @@
+<app-page-header title="System health" subtitle="API latency, database time, AI requests, token usage, tool failures and jobs">
+  @if (refreshedAt(); as at) {
+    <span class="text-xs text-muted">Updated {{ at | date: 'mediumTime' }}</span>
+  }
+  <button mat-stroked-button (click)="refresh()">
+    <mat-icon>refresh</mat-icon>
+    Refresh
+  </button>
+</app-page-header>
+
+@if (error(); as message) {
+  <p class="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-800" role="alert">{{ message }}</p>
+}
+
+@if (summary(); as s) {
+  <p class="mb-4 mt-0 text-xs text-muted">
+    Measured since the API started at {{ s.sinceUtc | date: 'medium' }}. Distributed traces are exported over OTLP when a
+    collector is configured.
+  </p>
+
+  <section class="mb-5 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6" aria-label="Key figures">
+    <div class="kpi">
+      <span class="kpi-label">API requests</span>
+      <span class="kpi-value">{{ s.http.count | number }}</span>
+      <span class="kpi-hint">{{ errorRate(s.http) | percent: '1.0-2' }} server errors</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">API latency p95</span>
+      <span class="kpi-value">{{ s.http.p95Ms | number: '1.0-0' }} ms</span>
+      <span class="kpi-hint">p50 {{ s.http.p50Ms | number: '1.0-0' }} ms</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">Database p95</span>
+      <span class="kpi-value">{{ s.database.p95Ms | number: '1.0-1' }} ms</span>
+      <span class="kpi-hint">{{ s.database.count | number }} commands · {{ s.database.failures }} failed</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">AI requests</span>
+      <span class="kpi-value">{{ aiCalls(s) | number }}</span>
+      <span class="kpi-hint">{{ aiFailures(s) }} failed</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">Tokens</span>
+      <span class="kpi-value">{{ s.inputTokens + s.outputTokens | number }}</span>
+      <span class="kpi-hint">{{ s.inputTokens | number }} in · {{ s.outputTokens | number }} out</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">Tool failures</span>
+      <span class="kpi-value">{{ toolFailures(s) }}</span>
+      <span class="kpi-hint">across agent tool calls</span>
+    </div>
+  </section>
+
+  <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+    <section class="panel overflow-hidden">
+      <div class="panel-header"><h2 class="panel-title">Slowest endpoints (p95)</h2></div>
+      <table class="data-table">
+        <thead><tr><th>Endpoint</th><th class="text-right">Requests</th><th class="text-right">p50</th><th class="text-right">p95</th><th class="text-right">Errors</th></tr></thead>
+        <tbody>
+          @for (r of s.slowestRoutes; track r.name) {
+            <tr>
+              <td class="font-mono text-xs">{{ r.name }}</td>
+              <td class="text-right numeric">{{ r.count | number }}</td>
+              <td class="text-right numeric">{{ r.p50Ms | number: '1.0-0' }} ms</td>
+              <td class="text-right numeric">{{ r.p95Ms | number: '1.0-0' }} ms</td>
+              <td class="text-right numeric">{{ r.failures }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="text-muted">No requests recorded yet.</td></tr>
+          }
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel overflow-hidden">
+      <div class="panel-header"><h2 class="panel-title">AI service calls</h2></div>
+      <table class="data-table">
+        <thead><tr><th>Operation</th><th class="text-right">Calls</th><th class="text-right">p50</th><th class="text-right">p95</th><th class="text-right">Failures</th></tr></thead>
+        <tbody>
+          @for (r of s.aiOperations; track r.name) {
+            <tr>
+              <td class="font-mono text-xs">{{ r.name }}</td>
+              <td class="text-right numeric">{{ r.count | number }}</td>
+              <td class="text-right numeric">{{ r.p50Ms / 1000 | number: '1.1-1' }} s</td>
+              <td class="text-right numeric">{{ r.p95Ms / 1000 | number: '1.1-1' }} s</td>
+              <td class="text-right">
+                @if (r.failures) {
+                  <app-status-badge [label]="r.failures + ''" tone="danger" />
+                } @else {
+                  <span class="numeric">0</span>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="text-muted">No AI calls since start-up.</td></tr>
+          }
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel overflow-hidden">
+      <div class="panel-header"><h2 class="panel-title">Agent execution time</h2></div>
+      <table class="data-table">
+        <thead><tr><th>Agent / intent</th><th class="text-right">Runs</th><th class="text-right">p50</th><th class="text-right">p95</th></tr></thead>
+        <tbody>
+          @for (r of s.agentIntents; track r.name) {
+            <tr>
+              <td>{{ humanize(r.name) }}</td>
+              <td class="text-right numeric">{{ r.count | number }}</td>
+              <td class="text-right numeric">{{ r.p50Ms / 1000 | number: '1.1-1' }} s</td>
+              <td class="text-right numeric">{{ r.p95Ms / 1000 | number: '1.1-1' }} s</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="4" class="text-muted">No agent runs since start-up.</td></tr>
+          }
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel overflow-hidden">
+      <div class="panel-header"><h2 class="panel-title">Agent tools</h2></div>
+      <table class="data-table">
+        <thead><tr><th>Tool</th><th class="text-right">Calls</th><th class="text-right">Failures</th></tr></thead>
+        <tbody>
+          @for (t of s.tools; track t.tool) {
+            <tr>
+              <td>{{ t.tool }}</td>
+              <td class="text-right numeric">{{ t.calls | number }}</td>
+              <td class="text-right">
+                @if (t.failures) {
+                  <app-status-badge [label]="t.failures + ''" tone="danger" />
+                } @else {
+                  <span class="numeric">0</span>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="3" class="text-muted">No tool calls since start-up.</td></tr>
+          }
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel overflow-hidden xl:col-span-2">
+      <div class="panel-header"><h2 class="panel-title">Background jobs</h2></div>
+      <table class="data-table">
+        <thead><tr><th>Job</th><th class="text-right">Runs</th><th class="text-right">Typical duration</th><th class="text-right">Longest</th><th class="text-right">Failures</th></tr></thead>
+        <tbody>
+          @for (j of s.jobs; track j.name) {
+            <tr>
+              <td>{{ humanize(j.name) }}</td>
+              <td class="text-right numeric">{{ j.count }}</td>
+              <td class="text-right numeric">{{ j.p50Ms / 1000 | number: '1.1-1' }} s</td>
+              <td class="text-right numeric">{{ j.maxMs / 1000 | number: '1.1-1' }} s</td>
+              <td class="text-right numeric">{{ j.failures }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="text-muted">No jobs have run since start-up.</td></tr>
+          }
+        </tbody>
+      </table>
+    </section>
+  </div>
+}

@@ -33,9 +33,9 @@ public class ObservabilityController(MetricsSnapshot metrics) : ControllerBase
     [HttpGet("summary")]
     public ObservabilitySummary Summary()
     {
-        var http = metrics.Read("http.server.request.duration").Where(s => !s.Tag("http.route").StartsWith("health")).ToList();
+        var http = metrics.Read("http.server.request.duration").Where(s => s.Tag("http.route").Trim('/') != "health").ToList();
         var routes = http
-            .GroupBy(s => $"{s.Tag("http.request.method")} /{s.Tag("http.route")}")
+            .GroupBy(s => $"{s.Tag("http.request.method")} /{s.Tag("http.route").TrimStart('/')}")
             .Select(g => Combine(g.Key, g, s => s.Tag("http.response.status_code").StartsWith('5'), 1000))
             .OrderByDescending(r => r.P95Ms).Take(8).ToList();
 

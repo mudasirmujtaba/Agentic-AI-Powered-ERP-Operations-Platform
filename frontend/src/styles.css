@@ -1,3 +1,78 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+
+/* Design tokens shared by Tailwind utilities and component styles. */
+@theme {
+  --font-sans: Inter, 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Mono', Consolas, ui-monospace, monospace;
+  --color-brand-50: #f0f4fe;
+  --color-brand-100: #e5ecfd;
+  --color-brand-600: #1e4fd8;
+  --color-brand-700: #173fae;
+  --color-ink: #0f172a;
+  --color-muted: #64748b;
+  --color-line: #e2e8f0;
+  --color-canvas: #f4f6f9;
+  --color-sidebar: #0f1b2d;
+}
+
+@layer base {
+  h1, h2, h3 { color: var(--color-ink); letter-spacing: -0.01em; }
+  a { color: var(--color-brand-600); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .mat-mdc-button-base, .mat-mdc-button-base:hover, a.mat-mdc-list-item:hover { text-decoration: none; }
+  .font-mono { font-size: 0.92em; }
+  ::selection { background: #cfdcfb; }
+}
+
+@layer components {
+  /* The standard content surface: white, hairline border, small radius, no shadow. */
+  .panel {
+    @apply rounded-lg border border-line bg-white;
+  }
+  .panel-header {
+    @apply flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3;
+  }
+  .panel-title {
+    @apply m-0 text-sm font-semibold text-ink;
+  }
+  .panel-body { @apply p-4; }
+
+  /* Plain HTML data tables inside panels, matching mat-table. */
+  .data-table { @apply w-full border-collapse text-[13.5px]; }
+  .data-table th {
+    @apply border-b border-line bg-slate-50 px-3 py-2 text-left text-xs font-semibold text-slate-600;
+  }
+  .data-table td { @apply border-b border-slate-100 px-3 py-2.5 align-middle; }
+  .data-table tbody tr:last-child td { @apply border-b-0; }
+  .data-table tbody tr:hover td { @apply bg-slate-50/70; }
+
+  /* Key figure tiles. */
+  .kpi { @apply flex flex-col gap-1 rounded-lg border border-line bg-white p-4; }
+  .kpi-label { @apply text-xs font-medium uppercase tracking-wide text-muted; }
+  .kpi-value { @apply text-2xl font-semibold tracking-tight text-ink tabular-nums; }
+  .kpi-hint { @apply text-xs text-muted; }
+
+  /* Definition lists for record details. */
+  .details { @apply m-0 grid gap-x-6 gap-y-3 text-sm; }
+  .details dt { @apply text-xs font-medium text-muted; }
+  .details dd { @apply m-0 mt-0.5 text-ink; }
+
+  .muted { @apply text-muted; }
+  .numeric { @apply tabular-nums; }
+}
+
+/* Material tables sit inside panels; give header rows the same treatment as .data-table. */
+.mat-mdc-header-row { background: #f8fafc; }
+.mat-mdc-header-cell { letter-spacing: 0.01em; }
+.mat-mdc-row:hover .mat-mdc-cell { background: #f8fafc; }
+.mat-mdc-paginator { border-top: 1px solid var(--color-line); }
+
+/* Snack bars: dark, compact. */
+.mat-mdc-snack-bar-container { --mdc-snackbar-container-color: #0f172a; }
+
+.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; }
+
+/* Clickable KPI tiles. */
+.tile-link { color: inherit !important; text-decoration: none !important; transition: border-color 120ms ease, background-color 120ms ease; }
+.tile-link:hover { border-color: #cbd5e1; background: #fbfcfd; }
+.tile-link:focus-visible { outline: 2px solid var(--color-brand-600); outline-offset: 2px; }
