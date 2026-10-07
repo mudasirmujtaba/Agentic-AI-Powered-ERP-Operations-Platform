@@ -1,10 +1,7 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
@@ -16,18 +13,15 @@ import { createPagedList } from '../../../../shared/data/paged-list';
 import { INVOICE_STATUSES, OVERDUE_STATUS, statusOptions, StatusStyle } from '../../../../shared/models/statuses';
 import { InvoicesApi } from '../../data/finance.api';
 import { InvoiceListItem } from '../../data/finance.models';
-import { Icon } from '../../../../shared/components/icon/icon';
+import { FilterBar, FilterSearch, FilterSelect } from '../../../../shared/components/filter-bar/filter-bar';
 
 @Component({
   selector: 'app-invoice-list',
-  imports: [Icon, 
+  imports: [FilterBar, FilterSearch, FilterSelect, 
     CurrencyPipe,
     DatePipe,
-    MatFormFieldModule,
-    MatInputModule,
     MatPaginatorModule,
     MatProgressBarModule,
-    MatSelectModule,
     MatSlideToggleModule,
     MatSortModule,
     MatTableModule,

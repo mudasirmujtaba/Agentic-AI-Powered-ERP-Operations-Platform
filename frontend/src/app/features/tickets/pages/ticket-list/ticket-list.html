@@ -66,48 +66,16 @@
   }
 </section>
 
-<div class="flex flex-wrap items-center gap-4">
-  <mat-form-field appearance="outline" class="w-full max-w-xs" subscriptSizing="dynamic">
-    <mat-label>Search</mat-label>
-    <app-icon name="search" matPrefix />
-    <input matInput placeholder="Ticket, subject, customer, product" (input)="list.onSearch($any($event.target).value)" />
-  </mat-form-field>
-
-  <mat-form-field appearance="outline" class="w-48" subscriptSizing="dynamic">
-    <mat-label>Status</mat-label>
-    <mat-select [value]="status()" (selectionChange)="setStatus($event.value)">
-      <mat-option [value]="undefined">All statuses</mat-option>
-      @for (option of statusOptions; track option.value) {
-        <mat-option [value]="option.value">{{ option.label }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
-
-  <mat-form-field appearance="outline" class="w-40" subscriptSizing="dynamic">
-    <mat-label>Priority</mat-label>
-    <mat-select [value]="priority()" (selectionChange)="setPriority($event.value)">
-      <mat-option [value]="undefined">All priorities</mat-option>
-      @for (option of priorityOptions; track option.value) {
-        <mat-option [value]="option.value">{{ option.label }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
-
-  <mat-form-field appearance="outline" class="w-44" subscriptSizing="dynamic">
-    <mat-label>Category</mat-label>
-    <mat-select [value]="category()" (selectionChange)="setCategory($event.value)">
-      <mat-option [value]="undefined">All categories</mat-option>
-      @for (option of categoryOptions; track option.value) {
-        <mat-option [value]="option.value">{{ option.label }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
-
+<app-filter-bar [active]="filtersActive()" (clear)="clearFilters()">
+  <app-filter-search placeholder="Search tickets…" [value]="list.query().search" (valueChange)="list.onSearch($event)" />
+  <app-filter-select label="Status" [options]="statusOptions" [value]="status()" (valueChange)="setStatus($event)" />
+  <app-filter-select label="Priority" [options]="priorityOptions" [value]="priority()" (valueChange)="setPriority($event)" />
+  <app-filter-select label="Category" [options]="categoryOptions" [value]="category()" (valueChange)="setCategory($event)" />
   <mat-slide-toggle [checked]="openOnly()" (change)="setOpenOnly($event.checked)">Open only</mat-slide-toggle>
   <mat-slide-toggle [checked]="mine()" (change)="setMine($event.checked)">Assigned to me</mat-slide-toggle>
-</div>
+</app-filter-bar>
 
-<div class="mt-4 overflow-x-auto panel">
+<div class="overflow-x-auto panel">
   @if (list.loading()) {
     <mat-progress-bar mode="indeterminate" />
   }

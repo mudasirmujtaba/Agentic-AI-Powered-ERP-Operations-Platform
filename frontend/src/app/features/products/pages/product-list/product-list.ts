@@ -1,12 +1,9 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSelectModule } from '@angular/material/select';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { Router, RouterLink } from '@angular/router';
@@ -20,18 +17,16 @@ import { HasRoleDirective } from '../../../../shared/directives/has-role.directi
 import { CategoriesApi, ProductsApi } from '../../data/catalog.api';
 import { ProductListItem } from '../../data/catalog.models';
 import { Icon } from '../../../../shared/components/icon/icon';
+import { FilterBar, FilterSearch, FilterSelect } from '../../../../shared/components/filter-bar/filter-bar';
 
 @Component({
   selector: 'app-product-list',
-  imports: [Icon, 
+  imports: [FilterBar, FilterSearch, FilterSelect, Icon, 
     CurrencyPipe,
     RouterLink,
     MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatPaginatorModule,
     MatProgressBarModule,
-    MatSelectModule,
     MatSortModule,
     MatTableModule,
     PageHeader,
@@ -57,9 +52,8 @@ export class ProductList {
     { initialValue: [] },
   );
 
-  protected filterByCategory(categoryId: string | undefined): void {
-    this.list.setFilter({ categoryId });
-  }
+  protected readonly categoryOptions = computed(() => this.categories().map((c) => ({ value: c.id, label: c.name })));
+
 
   protected open(product: ProductListItem): void {
     this.router.navigate(['/products', product.id]);

@@ -9,25 +9,12 @@
   </button>
 </app-page-header>
 
-<div class="flex flex-wrap gap-4">
-  <mat-form-field appearance="outline" class="w-full max-w-sm" subscriptSizing="dynamic">
-    <mat-label>Search</mat-label>
-    <app-icon name="search" matPrefix />
-    <input matInput placeholder="Code or name" (input)="list.onSearch($any($event.target).value)" />
-  </mat-form-field>
+<app-filter-bar [active]="list.hasFilters(['categoryId'])" (clear)="list.resetFilters({ categoryId: undefined })">
+  <app-filter-search placeholder="Search products…" [value]="list.query().search" (valueChange)="list.onSearch($event)" />
+  <app-filter-select label="Category" [options]="categoryOptions()" [value]="list.query()['categoryId']" (valueChange)="list.setFilter({ categoryId: $event })" />
+</app-filter-bar>
 
-  <mat-form-field appearance="outline" class="w-64" subscriptSizing="dynamic">
-    <mat-label>Category</mat-label>
-    <mat-select (selectionChange)="filterByCategory($event.value)">
-      <mat-option [value]="undefined">All categories</mat-option>
-      @for (category of categories(); track category.id) {
-        <mat-option [value]="category.id">{{ category.name }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
-</div>
-
-<div class="mt-4 overflow-x-auto panel">
+<div class="overflow-x-auto panel">
   @if (list.loading()) {
     <mat-progress-bar mode="indeterminate" />
   }

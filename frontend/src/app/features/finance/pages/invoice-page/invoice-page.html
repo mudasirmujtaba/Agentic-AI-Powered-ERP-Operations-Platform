@@ -49,7 +49,7 @@
         <mat-error>{{ firstError(paymentForm.controls.amount) }}</mat-error>
       </mat-form-field>
       <mat-form-field appearance="outline">
-        <mat-label>Paid on</mat-label>
+        <mat-label>Paid on <span class="optional">(optional)</span></mat-label>
         <input matInput type="date" formControlName="paidAt" />
         <mat-error>{{ firstError(paymentForm.controls.paidAt) }}</mat-error>
       </mat-form-field>
@@ -62,7 +62,7 @@
         </mat-select>
       </mat-form-field>
       <mat-form-field appearance="outline">
-        <mat-label>Reference</mat-label>
+        <mat-label>Reference <span class="optional">(optional)</span></mat-label>
         <input matInput formControlName="reference" />
       </mat-form-field>
       <button mat-flat-button type="submit" class="mt-2" [disabled]="busy()">Save payment</button>

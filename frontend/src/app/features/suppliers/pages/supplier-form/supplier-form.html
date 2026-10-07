@@ -32,19 +32,19 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline">
-      <mat-label>Contact name</mat-label>
+      <mat-label>Contact name <span class="optional">(optional)</span></mat-label>
       <input matInput formControlName="contactName" />
       <mat-error>{{ firstError(form.controls.contactName) }}</mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline">
-      <mat-label>Email</mat-label>
+      <mat-label>Email <span class="optional">(optional)</span></mat-label>
       <input matInput type="email" formControlName="email" />
       <mat-error>{{ firstError(form.controls.email) }}</mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline">
-      <mat-label>Phone</mat-label>
+      <mat-label>Phone <span class="optional">(optional)</span></mat-label>
       <input matInput formControlName="phone" />
       <mat-error>{{ firstError(form.controls.phone) }}</mat-error>
     </mat-form-field>

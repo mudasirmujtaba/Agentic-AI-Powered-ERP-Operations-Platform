@@ -63,7 +63,7 @@
   @if (canDecide()) {
     <div class="flex flex-wrap items-center gap-2">
       <mat-form-field appearance="outline" class="min-w-64 flex-1" subscriptSizing="dynamic">
-        <mat-label>Comment (optional)</mat-label>
+        <mat-label>Comment <span class="optional">(optional)</span></mat-label>
         <input matInput [(ngModel)]="comments" />
       </mat-form-field>
       <button mat-flat-button (click)="approve()" [disabled]="busy() || total() === 0">

@@ -1,23 +1,11 @@
 <app-page-header title="Audit log" subtitle="Every consequential action, who took it, and whether AI was involved" />
 
-<div class="flex flex-wrap items-center gap-4">
-  <mat-form-field appearance="outline" class="w-full max-w-sm" subscriptSizing="dynamic">
-    <mat-label>Search</mat-label>
-    <app-icon name="search" matPrefix />
-    <input matInput placeholder="Document number, user or action" (input)="list.onSearch($any($event.target).value)" />
-  </mat-form-field>
+<app-filter-bar [active]="list.hasFilters(['source'])" (clear)="list.resetFilters({ source: undefined })">
+  <app-filter-search placeholder="Search audit log…" [value]="list.query().search" (valueChange)="list.onSearch($event)" />
+  <app-filter-select label="Source" [options]="sourceOptions" [value]="list.query()['source']" (valueChange)="list.setFilter({ source: $event })" />
+</app-filter-bar>
 
-  <mat-form-field appearance="outline" class="w-48" subscriptSizing="dynamic">
-    <mat-label>Source</mat-label>
-    <mat-select (selectionChange)="list.setFilter({ source: $event.value })">
-      <mat-option [value]="undefined">All sources</mat-option>
-      <mat-option value="User">User</mat-option>
-      <mat-option value="AiAssisted">AI-assisted</mat-option>
-    </mat-select>
-  </mat-form-field>
-</div>
-
-<div class="mt-4 overflow-x-auto panel">
+<div class="overflow-x-auto panel">
   @if (list.loading()) {
     <mat-progress-bar mode="indeterminate" />
   }

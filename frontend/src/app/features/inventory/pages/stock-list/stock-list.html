@@ -5,29 +5,13 @@
   </a>
 </app-page-header>
 
-<div class="flex flex-wrap items-center gap-4">
-  <mat-form-field appearance="outline" class="w-full max-w-sm" subscriptSizing="dynamic">
-    <mat-label>Search</mat-label>
-    <app-icon name="search" matPrefix />
-    <input matInput placeholder="Product code or name" (input)="list.onSearch($any($event.target).value)" />
-  </mat-form-field>
+<app-filter-bar [active]="list.hasFilters(['warehouseId', 'lowStockOnly'])" (clear)="list.resetFilters({ warehouseId: undefined, lowStockOnly: undefined })">
+  <app-filter-search placeholder="Search products…" [value]="list.query().search" (valueChange)="list.onSearch($event)" />
+  <app-filter-select label="Warehouse" [options]="warehouseOptions()" [value]="list.query()['warehouseId']" (valueChange)="list.setFilter({ warehouseId: $event })" />
+  <mat-slide-toggle [checked]="list.query()['lowStockOnly'] === 'true'" (change)="list.setFilter({ lowStockOnly: $event.checked ? 'true' : undefined })">At or below reorder point</mat-slide-toggle>
+</app-filter-bar>
 
-  <mat-form-field appearance="outline" class="w-64" subscriptSizing="dynamic">
-    <mat-label>Warehouse</mat-label>
-    <mat-select (selectionChange)="list.setFilter({ warehouseId: $event.value })">
-      <mat-option [value]="undefined">All warehouses</mat-option>
-      @for (warehouse of warehouses(); track warehouse.id) {
-        <mat-option [value]="warehouse.id">{{ warehouse.code }} · {{ warehouse.name }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
-
-  <mat-slide-toggle [checked]="initialLowStockOnly" (change)="list.setFilter({ lowStockOnly: $event.checked ? 'true' : undefined })">
-    At or below reorder point
-  </mat-slide-toggle>
-</div>
-
-<div class="mt-4 overflow-x-auto panel">
+<div class="overflow-x-auto panel">
   @if (list.loading()) {
     <mat-progress-bar mode="indeterminate" />
   }

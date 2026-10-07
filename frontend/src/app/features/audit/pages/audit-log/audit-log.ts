@@ -1,11 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 
 import { environment } from '../../../../../environments/environment';
@@ -13,7 +10,7 @@ import { PageHeader } from '../../../../shared/components/page-header/page-heade
 import { StatusBadge } from '../../../../shared/components/status-badge/status-badge';
 import { createPagedList } from '../../../../shared/data/paged-list';
 import { PagedQuery, PagedResult } from '../../../../shared/models/paged';
-import { Icon } from '../../../../shared/components/icon/icon';
+import { FilterBar, FilterSearch, FilterSelect } from '../../../../shared/components/filter-bar/filter-bar';
 
 interface AuditEntry {
   id: string;
@@ -28,13 +25,18 @@ interface AuditEntry {
 
 @Component({
   selector: 'app-audit-log',
-  imports: [Icon, DatePipe, MatFormFieldModule, MatInputModule, MatPaginatorModule, MatProgressBarModule, MatSelectModule, MatTableModule, PageHeader, StatusBadge],
+  imports: [FilterBar, FilterSearch, FilterSelect, DatePipe, MatPaginatorModule, MatProgressBarModule, MatTableModule, PageHeader, StatusBadge],
   templateUrl: './audit-log.html',
 })
 export class AuditLog {
   private readonly http = inject(HttpClient);
 
   protected readonly columns = ['occurredAtUtc', 'userEmail', 'source', 'action', 'entity', 'summary'];
+  protected readonly sourceOptions = [
+    { value: 'User', label: 'User' },
+    { value: 'AiAssisted', label: 'AI-assisted' },
+    { value: 'System', label: 'System' },
+  ];
   protected readonly list = createPagedList((query) => this.fetch(query), { pageSize: 50 });
 
   private fetch(query: PagedQuery) {

@@ -25,7 +25,7 @@
   </mat-form-field>
 
   <mat-form-field appearance="outline">
-    <mat-label>Description</mat-label>
+    <mat-label>Description <span class="optional">(optional)</span></mat-label>
     <textarea matInput rows="3" formControlName="description"></textarea>
     <mat-error>{{ firstError(form.controls.description) }}</mat-error>
   </mat-form-field>

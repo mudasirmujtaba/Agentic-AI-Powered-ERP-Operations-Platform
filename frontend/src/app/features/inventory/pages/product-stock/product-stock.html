@@ -70,7 +70,7 @@
         <mat-error>{{ firstError(adjustForm.controls.quantity) }}</mat-error>
       </mat-form-field>
       <mat-form-field appearance="outline" class="min-w-64">
-        <mat-label>Notes</mat-label>
+        <mat-label>Notes <span class="optional">(optional)</span></mat-label>
         <input matInput formControlName="notes" />
       </mat-form-field>
       <button mat-flat-button type="submit" class="mt-2" [disabled]="busy()">Post adjustment</button>
@@ -103,7 +103,7 @@
         <mat-error>{{ firstError(transferForm.controls.quantity) }}</mat-error>
       </mat-form-field>
       <mat-form-field appearance="outline" class="min-w-64">
-        <mat-label>Notes</mat-label>
+        <mat-label>Notes <span class="optional">(optional)</span></mat-label>
         <input matInput formControlName="notes" />
       </mat-form-field>
       <button mat-flat-button type="submit" class="mt-2" [disabled]="busy()">Post transfer</button>

@@ -1,28 +1,12 @@
 <app-page-header title="Invoices" subtitle="Receivables, due dates and payments. Invoices are created from shipped sales orders." />
 
-<div class="flex flex-wrap items-center gap-4">
-  <mat-form-field appearance="outline" class="w-full max-w-sm" subscriptSizing="dynamic">
-    <mat-label>Search</mat-label>
-    <app-icon name="search" matPrefix />
-    <input matInput placeholder="Invoice, order or customer" (input)="list.onSearch($any($event.target).value)" />
-  </mat-form-field>
+<app-filter-bar [active]="list.hasFilters(['status', 'overdueOnly'])" (clear)="list.resetFilters({ status: undefined, overdueOnly: undefined })">
+  <app-filter-search placeholder="Search invoices…" [value]="list.query().search" (valueChange)="list.onSearch($event)" />
+  <app-filter-select label="Status" [options]="statusOptions" [value]="list.query()['status']" (valueChange)="list.setFilter({ status: $event })" />
+  <mat-slide-toggle [checked]="list.query()['overdueOnly'] === 'true'" (change)="list.setFilter({ overdueOnly: $event.checked ? 'true' : undefined })">Overdue only</mat-slide-toggle>
+</app-filter-bar>
 
-  <mat-form-field appearance="outline" class="w-56" subscriptSizing="dynamic">
-    <mat-label>Status</mat-label>
-    <mat-select (selectionChange)="list.setFilter({ status: $event.value })">
-      <mat-option [value]="undefined">All statuses</mat-option>
-      @for (status of statusOptions; track status.value) {
-        <mat-option [value]="status.value">{{ status.label }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
-
-  <mat-slide-toggle [checked]="initialOverdueOnly" (change)="list.setFilter({ overdueOnly: $event.checked ? 'true' : undefined })">
-    Overdue only
-  </mat-slide-toggle>
-</div>
-
-<div class="mt-4 overflow-x-auto panel">
+<div class="overflow-x-auto panel">
   @if (list.loading()) {
     <mat-progress-bar mode="indeterminate" />
   }

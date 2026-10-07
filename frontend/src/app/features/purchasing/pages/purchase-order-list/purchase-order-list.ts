@@ -1,11 +1,8 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSelectModule } from '@angular/material/select';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -19,19 +16,17 @@ import { PURCHASE_ORDER_STATUSES, statusOptions, StatusStyle } from '../../../..
 import { PurchaseOrdersApi } from '../../data/purchasing.api';
 import { PurchaseOrderListItem } from '../../data/purchasing.models';
 import { Icon } from '../../../../shared/components/icon/icon';
+import { FilterBar, FilterSearch, FilterSelect } from '../../../../shared/components/filter-bar/filter-bar';
 
 @Component({
   selector: 'app-purchase-order-list',
-  imports: [Icon, 
+  imports: [FilterBar, FilterSearch, FilterSelect, Icon, 
     CurrencyPipe,
     DatePipe,
     RouterLink,
     MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatPaginatorModule,
     MatProgressBarModule,
-    MatSelectModule,
     MatSortModule,
     MatTableModule,
     PageHeader,

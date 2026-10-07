@@ -113,7 +113,7 @@
 .typing i {
   width: 4px;
   height: 4px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   background: var(--gray-400);
   animation: blink 1.2s infinite ease-in-out;
 }

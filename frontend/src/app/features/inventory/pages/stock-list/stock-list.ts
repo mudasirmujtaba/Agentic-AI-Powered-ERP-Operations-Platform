@@ -1,11 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
@@ -20,17 +17,15 @@ import { WarehousesApi } from '../../warehouses/data/warehouses.api';
 import { InventoryApi } from '../../data/inventory.api';
 import { StockLevel } from '../../data/inventory.models';
 import { Icon } from '../../../../shared/components/icon/icon';
+import { FilterBar, FilterSearch, FilterSelect } from '../../../../shared/components/filter-bar/filter-bar';
 
 @Component({
   selector: 'app-stock-list',
-  imports: [Icon, 
+  imports: [FilterBar, FilterSearch, FilterSelect, Icon, 
     RouterLink,
     MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatPaginatorModule,
     MatProgressBarModule,
-    MatSelectModule,
     MatSlideToggleModule,
     MatSortModule,
     MatTableModule,
@@ -57,6 +52,10 @@ export class StockList {
       .list({ page: 1, pageSize: 100, sortBy: 'code' })
       .pipe(map((r) => r.items), catchError(() => of([]))),
     { initialValue: [] },
+  );
+
+  protected readonly warehouseOptions = computed(() =>
+    this.warehouses().map((w) => ({ value: w.id, label: `${w.code} · ${w.name}` })),
   );
 
   protected open(row: StockLevel): void {

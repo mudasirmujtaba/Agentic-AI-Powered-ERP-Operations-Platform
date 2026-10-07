@@ -5,25 +5,12 @@
   </button>
 </app-page-header>
 
-<div class="flex flex-wrap items-center gap-4">
-  <mat-form-field appearance="outline" class="w-full max-w-sm" subscriptSizing="dynamic">
-    <mat-label>Search</mat-label>
-    <app-icon name="search" matPrefix />
-    <input matInput placeholder="PO number or supplier" (input)="list.onSearch($any($event.target).value)" />
-  </mat-form-field>
+<app-filter-bar [active]="list.hasFilters(['status'])" (clear)="list.resetFilters({ status: undefined })">
+  <app-filter-search placeholder="Search purchase orders…" [value]="list.query().search" (valueChange)="list.onSearch($event)" />
+  <app-filter-select label="Status" [options]="statusOptions" [value]="list.query()['status']" (valueChange)="list.setFilter({ status: $event })" />
+</app-filter-bar>
 
-  <mat-form-field appearance="outline" class="w-56" subscriptSizing="dynamic">
-    <mat-label>Status</mat-label>
-    <mat-select [value]="initialStatus" (selectionChange)="list.setFilter({ status: $event.value })">
-      <mat-option [value]="undefined">All statuses</mat-option>
-      @for (status of statusOptions; track status.value) {
-        <mat-option [value]="status.value">{{ status.label }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
-</div>
-
-<div class="mt-4 overflow-x-auto panel">
+<div class="overflow-x-auto panel">
   @if (list.loading()) {
     <mat-progress-bar mode="indeterminate" />
   }

@@ -45,7 +45,7 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Related order (optional)</mat-label>
+          <mat-label>Related order <span class="optional">(optional)</span></mat-label>
           <mat-select formControlName="salesOrderId">
             <mat-option [value]="null">None</mat-option>
             @for (order of customerOrders(); track order.id) {
@@ -55,7 +55,7 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Product (optional)</mat-label>
+          <mat-label>Product <span class="optional">(optional)</span></mat-label>
           <mat-select formControlName="productId">
             <mat-option [value]="null">None</mat-option>
             @for (product of products(); track product.id) {
@@ -65,7 +65,7 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Assigned to</mat-label>
+          <mat-label>Assigned to <span class="optional">(optional)</span></mat-label>
           <mat-select formControlName="assignedToUserId">
             <mat-option [value]="null">Unassigned</mat-option>
             @for (user of assignees(); track user.id) {

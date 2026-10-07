@@ -8,7 +8,7 @@ import {
   Subject,
   catchError,
   debounceTime,
-  distinctUntilChanged,
+  filter,
   of,
   switchMap,
   tap,
@@ -63,7 +63,12 @@ export function createPagedList<T>(
   const update = (patch: Partial<PagedQuery>) => query$.next({ ...query$.value, ...patch });
 
   search$
-    .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(destroyRef))
+    .pipe(
+      debounceTime(300),
+      // Compare with the live query (not the previous term) so a search cleared by resetFilters can be retyped.
+      filter((term) => (term || undefined) !== query$.value.search),
+      takeUntilDestroyed(destroyRef),
+    )
     .subscribe((search) => update({ search: search || undefined, page: 1 }));
 
   return {
@@ -81,6 +86,13 @@ export function createPagedList<T>(
       }),
     onSearch: (term: string) => search$.next(term.trim()),
     setFilter: (patch: Partial<PagedQuery>) => update({ ...patch, page: 1 }),
+    /** True when the search or any of `keys` differs from its default (undefined unless given). */
+    hasFilters: (keys: string[], defaults: Partial<PagedQuery> = {}) => {
+      const q = query();
+      return !!q.search || keys.some((key) => (q[key] ?? undefined) !== (defaults[key] ?? undefined));
+    },
+    /** Clears the search and applies `defaults` to the given filters, in one request. */
+    resetFilters: (defaults: Partial<PagedQuery>) => update({ ...defaults, search: undefined, page: 1 }),
     reload: () => update({}),
   };
 }

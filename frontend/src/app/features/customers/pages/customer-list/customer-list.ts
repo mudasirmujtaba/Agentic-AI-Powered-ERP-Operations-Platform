@@ -1,8 +1,6 @@
 import { CurrencyPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSortModule } from '@angular/material/sort';
@@ -17,17 +15,16 @@ import { HasRoleDirective } from '../../../../shared/directives/has-role.directi
 import { CustomersApi } from '../../data/customers.api';
 import { CUSTOMER_STATUSES, CustomerListItem, CustomerStatus } from '../../data/customers.models';
 import { Icon } from '../../../../shared/components/icon/icon';
+import { FilterBar, FilterSearch } from '../../../../shared/components/filter-bar/filter-bar';
 
 const STATUS_TONES: Record<CustomerStatus, BadgeTone> = { Active: 'success', OnHold: 'warning', Inactive: 'neutral' };
 
 @Component({
   selector: 'app-customer-list',
-  imports: [Icon, 
+  imports: [FilterBar, FilterSearch, Icon, 
     CurrencyPipe,
     RouterLink,
     MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatPaginatorModule,
     MatProgressBarModule,
     MatSortModule,

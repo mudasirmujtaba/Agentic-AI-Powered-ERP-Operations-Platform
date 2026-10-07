@@ -6,7 +6,7 @@ export type BadgeTone = 'success' | 'warning' | 'neutral' | 'danger' | 'info';
 @Component({
   selector: 'app-status-badge',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<span class="badge" [attr.data-tone]="tone()"><span class="marker" aria-hidden="true"></span>{{ label() }}</span>`,
+  template: `<span class="badge" [attr.data-tone]="tone()"><span class="status-dot" aria-hidden="true"></span>{{ label() }}</span>`,
   styles: `
     .badge {
       display: inline-flex;
@@ -22,12 +22,6 @@ export type BadgeTone = 'success' | 'warning' | 'neutral' | 'danger' | 'info';
       line-height: var(--leading-xs);
       font-weight: var(--weight-medium);
       white-space: nowrap;
-    }
-    .marker {
-      width: 6px;
-      height: 6px;
-      border-radius: 2px;
-      background: currentColor;
     }
     [data-tone='success'] { --tone-fg: var(--success); --tone-bg: var(--success-bg); --tone-border: color-mix(in srgb, var(--success) 22%, transparent); }
     [data-tone='warning'] { --tone-fg: var(--warning); --tone-bg: var(--warning-bg); --tone-border: color-mix(in srgb, var(--warning) 22%, transparent); }

@@ -5,13 +5,11 @@
   </button>
 </app-page-header>
 
-<mat-form-field appearance="outline" class="w-full max-w-sm" subscriptSizing="dynamic">
-  <mat-label>Search</mat-label>
-  <app-icon name="search" matPrefix />
-  <input matInput placeholder="Code or name" (input)="list.onSearch($any($event.target).value)" />
-</mat-form-field>
+<app-filter-bar [active]="list.hasFilters([])" (clear)="list.resetFilters({  })">
+  <app-filter-search placeholder="Search suppliers…" [value]="list.query().search" (valueChange)="list.onSearch($event)" />
+</app-filter-bar>
 
-<div class="mt-4 overflow-x-auto panel">
+<div class="overflow-x-auto panel">
   @if (list.loading()) {
     <mat-progress-bar mode="indeterminate" />
   }

@@ -98,18 +98,26 @@
   --space-12: 48px;
   --space-16: 64px;
 
-  // Radius: nothing larger than 8px anywhere
+  // Radius: containers and controls never exceed 8px. --radius-full is only for things that are conventionally
+  // circular: avatars, status dots, radio buttons, switch tracks and thumbs, spinners and progress rings.
   --radius-sm: 4px; // badges, checkboxes
   --radius-md: 6px; // inputs, buttons, cards
   --radius-lg: 8px; // modals, popovers, menus
+  --radius-full: 9999px;
 
   // Elevation: borders by default; shadows only for floating layers
   --shadow-overlay: 0 8px 24px rgb(16 24 40 / 12%), 0 2px 6px rgb(16 24 40 / 6%);
+
+  // Avatars (circular)
+  --avatar-sm: 24px;
+  --avatar-md: 32px;
+  --avatar-lg: 40px;
 
   // Control sizes
   --control-sm: 32px;
   --control-md: 36px;
   --control-lg: 40px;
+  --filter-height: 32px;
   --input-height: 40px;
 
   // Layout

@@ -57,11 +57,11 @@
   @if (showShipForm()) {
     <form [formGroup]="shipForm" (ngSubmit)="ship()" class="mb-4 flex flex-wrap items-start gap-3 panel p-4">
       <mat-form-field appearance="outline">
-        <mat-label>Carrier</mat-label>
+        <mat-label>Carrier <span class="optional">(optional)</span></mat-label>
         <input matInput formControlName="carrier" placeholder="UPS" />
       </mat-form-field>
       <mat-form-field appearance="outline">
-        <mat-label>Tracking number</mat-label>
+        <mat-label>Tracking number <span class="optional">(optional)</span></mat-label>
         <input matInput formControlName="trackingNumber" />
       </mat-form-field>
       <button mat-flat-button type="submit" class="mt-2" [disabled]="busy()">Confirm shipment</button>
@@ -113,12 +113,12 @@
       </mat-form-field>
 
       <mat-form-field appearance="outline">
-        <mat-label>Required by</mat-label>
+        <mat-label>Required by <span class="optional">(optional)</span></mat-label>
         <input matInput type="date" formControlName="requiredDate" />
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="md:col-span-3">
-        <mat-label>Notes</mat-label>
+        <mat-label>Notes <span class="optional">(optional)</span></mat-label>
         <textarea matInput rows="2" formControlName="notes"></textarea>
         <mat-error>{{ firstError(form.controls.notes) }}</mat-error>
       </mat-form-field>

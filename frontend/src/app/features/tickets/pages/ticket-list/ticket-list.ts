@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -31,10 +31,11 @@ import { MarkdownLitePipe } from '../../../../shared/pipes/markdown-lite.pipe';
 import { TicketsApi } from '../../data/tickets.api';
 import { TicketInsights, TicketListItem, TicketStats } from '../../data/tickets.models';
 import { Icon } from '../../../../shared/components/icon/icon';
+import { FilterBar, FilterSearch, FilterSelect } from '../../../../shared/components/filter-bar/filter-bar';
 
 @Component({
   selector: 'app-ticket-list',
-  imports: [Icon, 
+  imports: [FilterBar, FilterSearch, FilterSelect, Icon, 
     DatePipe,
     RouterLink,
     MatButtonModule,
@@ -101,6 +102,20 @@ export class TicketList {
   protected readonly insightsLoading = signal(false);
   protected readonly insightsError = signal<string | null>(null);
   protected readonly insightDays = signal(90);
+
+  /** Filters differ from the page defaults (all statuses, open only, anyone's tickets). */
+  protected readonly filtersActive = computed(
+    () => !!this.list.query().search || !!this.status() || !!this.priority() || !!this.category() || !this.openOnly() || this.mine(),
+  );
+
+  protected clearFilters(): void {
+    this.status.set(undefined);
+    this.priority.set(undefined);
+    this.category.set(undefined);
+    this.openOnly.set(true);
+    this.mine.set(false);
+    this.list.resetFilters({ status: undefined, priority: undefined, category: undefined, openOnly: 'true', assignedToMe: undefined });
+  }
 
   protected setStatus(value: string | undefined): void {
     this.status.set(value);
