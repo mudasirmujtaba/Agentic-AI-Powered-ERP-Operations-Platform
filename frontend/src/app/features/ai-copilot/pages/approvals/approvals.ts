@@ -1,7 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
@@ -15,7 +14,7 @@ import { AiAction, AiActionStatus } from '../../data/ai.models';
 /** Design doc §26: one place where approvers review every AI-proposed operation. */
 @Component({
   selector: 'app-approvals',
-  imports: [DatePipe, RouterLink, MatButtonToggleModule, MatIconModule, MatProgressBarModule, PageHeader, ActionCard],
+  imports: [DatePipe, RouterLink, MatButtonToggleModule, MatProgressBarModule, PageHeader, ActionCard],
   templateUrl: './approvals.html',
 })
 export class Approvals {

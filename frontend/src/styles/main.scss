@@ -1,0 +1,632 @@
+// Global styles entry (with styles.css for Tailwind). Order: tokens -> Material theme -> base -> components.
+@use '@angular/material' as mat;
+@use 'tokens';
+
+// ---------------------------------------------------------------------------------------------------------------
+// Material theme, mapped onto the tokens. The azure palette is only the generator's starting point: every system
+// colour the app relies on is overridden with a token below, so nothing of the default M3 look remains.
+// ---------------------------------------------------------------------------------------------------------------
+html {
+  height: 100%;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        theme-type: light,
+      ),
+      typography: (
+        plain-family: 'Inter Variable, system-ui, -apple-system, "Segoe UI", sans-serif',
+        brand-family: 'Inter Variable, system-ui, -apple-system, "Segoe UI", sans-serif',
+        bold-weight: 600,
+        medium-weight: 500,
+        regular-weight: 400,
+      ),
+      density: -2,
+    )
+  );
+
+  @include mat.theme-overrides(
+    (
+      primary: var(--primary-600),
+      on-primary: var(--gray-0),
+      primary-container: var(--primary-50),
+      on-primary-container: var(--primary-700),
+      secondary: var(--gray-600),
+      secondary-container: var(--gray-100),
+      on-secondary-container: var(--gray-800),
+      tertiary: var(--primary-600),
+      surface: var(--surface),
+      surface-bright: var(--surface),
+      surface-container-lowest: var(--surface),
+      surface-container-low: var(--surface-subtle),
+      surface-container: var(--surface-sunken),
+      surface-container-high: var(--gray-100),
+      surface-container-highest: var(--gray-100),
+      surface-variant: var(--gray-100),
+      on-surface: var(--text-primary),
+      on-surface-variant: var(--text-secondary),
+      outline: var(--border-strong),
+      outline-variant: var(--border),
+      inverse-surface: var(--ink-900),
+      inverse-on-surface: var(--gray-0),
+      error: var(--danger),
+      on-error: var(--gray-0),
+      error-container: var(--danger-bg),
+      on-error-container: var(--danger),
+      body-medium: 400 14px / 20px var(--font-sans),
+      body-small: 400 12px / 16px var(--font-sans),
+      label-large: 500 14px / 20px var(--font-sans),
+      corner-extra-small: var(--radius-sm),
+      corner-small: var(--radius-md),
+      corner-medium: var(--radius-lg),
+      corner-large: var(--radius-lg),
+      corner-extra-large: var(--radius-lg),
+      corner-full: var(--radius-md),
+    )
+  );
+
+  // Buttons: 36px default, 6px radius, label 14/500. Variants are finished in the "Buttons" section below.
+  @include mat.button-overrides(
+    (
+      filled-container-height: var(--control-md),
+      outlined-container-height: var(--control-md),
+      text-container-height: var(--control-md),
+      protected-container-height: var(--control-md),
+      filled-container-shape: var(--radius-md),
+      outlined-container-shape: var(--radius-md),
+      text-container-shape: var(--radius-md),
+      protected-container-shape: var(--radius-md),
+      filled-horizontal-padding: var(--space-4),
+      outlined-horizontal-padding: var(--space-4),
+      text-horizontal-padding: var(--space-3),
+      filled-container-color: var(--primary-600),
+      filled-label-text-color: var(--gray-0),
+      filled-disabled-container-color: var(--primary-600),
+      filled-disabled-label-text-color: var(--gray-0),
+      outlined-label-text-color: var(--text-primary),
+      outlined-outline-color: var(--border-strong),
+      outlined-disabled-label-text-color: var(--text-primary),
+      outlined-disabled-outline-color: var(--border-strong),
+      text-label-text-color: var(--text-secondary),
+      text-disabled-label-text-color: var(--text-secondary),
+      filled-label-text-weight: 500,
+      outlined-label-text-weight: 500,
+      text-label-text-weight: 500,
+      filled-label-text-size: var(--text-base),
+      outlined-label-text-size: var(--text-base),
+      text-label-text-size: var(--text-base),
+      filled-label-text-tracking: 0,
+      outlined-label-text-tracking: 0,
+      text-label-text-tracking: 0,
+      filled-icon-spacing: var(--space-2),
+      outlined-icon-spacing: var(--space-2),
+      text-icon-spacing: var(--space-2),
+    )
+  );
+
+  @include mat.icon-button-overrides(
+    (
+      state-layer-size: var(--control-md),
+      container-shape: var(--radius-md),
+      icon-size: 20px,
+      icon-color: var(--text-secondary),
+    )
+  );
+
+  // Inputs: 40px, 6px radius, 1px border-strong; label rendering is restyled in the "Form fields" section.
+  @include mat.form-field-overrides(
+    (
+      container-height: var(--input-height),
+      container-vertical-padding: 10px,
+      container-text-size: var(--text-base),
+      container-text-line-height: var(--leading-base),
+      outlined-container-shape: var(--radius-md),
+      outlined-outline-color: var(--border-strong),
+      outlined-hover-outline-color: var(--gray-400),
+      outlined-focus-outline-color: var(--primary-500),
+      outlined-outline-width: 1px,
+      outlined-focus-outline-width: 1px,
+      outlined-error-outline-color: var(--danger),
+      outlined-error-focus-outline-color: var(--danger),
+      outlined-error-hover-outline-color: var(--danger),
+      outlined-input-text-color: var(--text-primary),
+      outlined-input-text-placeholder-color: var(--gray-400),
+      outlined-label-text-size: var(--text-base),
+      outlined-label-text-populated-size: var(--text-base),
+      outlined-label-text-weight: 500,
+      outlined-label-text-color: var(--text-primary),
+      outlined-hover-label-text-color: var(--text-primary),
+      outlined-focus-label-text-color: var(--text-primary),
+      outlined-error-label-text-color: var(--text-primary),
+      outlined-error-focus-label-text-color: var(--text-primary),
+      outlined-error-hover-label-text-color: var(--text-primary),
+      outlined-disabled-outline-color: var(--border),
+      outlined-disabled-input-text-color: var(--text-muted),
+      subscript-text-size: var(--text-xs),
+      subscript-text-line-height: var(--leading-xs),
+      error-text-color: var(--danger),
+      enabled-select-arrow-color: var(--text-muted),
+      focus-select-arrow-color: var(--text-secondary),
+    )
+  );
+
+  @include mat.select-overrides(
+    (
+      panel-background-color: var(--surface),
+      container-elevation-shadow: var(--shadow-overlay),
+      trigger-text-size: var(--text-base),
+      enabled-arrow-color: var(--text-muted),
+      focused-arrow-color: var(--text-secondary),
+    )
+  );
+
+  @include mat.option-overrides(
+    (
+      label-text-size: var(--text-base),
+      selected-state-layer-color: var(--surface-selected),
+      selected-state-label-text-color: var(--primary-700),
+      hover-state-layer-color: var(--surface-hover),
+      focus-state-layer-color: var(--surface-hover),
+    )
+  );
+
+  // Dense data tables: 36px header, 40px rows.
+  @include mat.table-overrides(
+    (
+      background-color: var(--surface),
+      header-container-height: 36px,
+      header-headline-color: var(--text-secondary),
+      header-headline-size: var(--text-xs),
+      header-headline-weight: 600,
+      header-headline-line-height: var(--leading-xs),
+      row-item-container-height: 40px,
+      row-item-outline-color: var(--gray-100),
+      row-item-label-text-size: var(--text-sm),
+      row-item-label-text-line-height: var(--leading-sm),
+      row-item-label-text-color: var(--text-primary),
+      footer-container-height: 40px,
+    )
+  );
+
+  @include mat.list-overrides(
+    (
+      list-item-one-line-container-height: 36px,
+      list-item-two-line-container-height: 52px,
+      list-item-container-shape: var(--radius-md),
+      list-item-label-text-size: var(--text-base),
+      list-item-supporting-text-size: var(--text-sm),
+    )
+  );
+
+  @include mat.paginator-overrides(
+    (
+      container-background-color: var(--surface),
+      container-text-color: var(--text-secondary),
+      container-text-size: var(--text-sm),
+      container-size: 48px,
+      form-field-container-height: var(--control-sm),
+      form-field-container-vertical-padding: 6px,
+    )
+  );
+
+  @include mat.menu-overrides(
+    (
+      container-shape: var(--radius-lg),
+      container-color: var(--surface),
+      container-elevation-shadow: var(--shadow-overlay),
+      item-label-text-size: var(--text-base),
+      item-label-text-color: var(--text-primary),
+      item-icon-color: var(--text-secondary),
+      item-icon-size: 16px,
+      item-hover-state-layer-color: var(--surface-hover),
+      item-focus-state-layer-color: var(--surface-hover),
+      divider-color: var(--border),
+    )
+  );
+
+  @include mat.card-overrides(
+    (
+      outlined-container-shape: var(--radius-md),
+      outlined-outline-color: var(--border),
+      elevated-container-shape: var(--radius-md),
+      elevated-container-elevation: none,
+    )
+  );
+
+  @include mat.dialog-overrides(
+    (
+      container-shape: var(--radius-lg),
+      container-color: var(--surface),
+      subhead-size: var(--text-lg),
+      subhead-weight: 600,
+    )
+  );
+
+  @include mat.snack-bar-overrides(
+    (
+      container-shape: var(--radius-md),
+      container-color: var(--ink-900),
+      supporting-text-color: var(--gray-0),
+      supporting-text-size: var(--text-sm),
+      button-color: var(--primary-100),
+    )
+  );
+
+  @include mat.tooltip-overrides(
+    (
+      container-shape: var(--radius-sm),
+      container-color: var(--ink-900),
+      supporting-text-color: var(--gray-0),
+      supporting-text-size: var(--text-xs),
+    )
+  );
+
+  @include mat.checkbox-overrides(
+    (
+      selected-icon-color: var(--primary-600),
+      selected-hover-icon-color: var(--primary-700),
+      selected-focus-icon-color: var(--primary-700),
+      unselected-icon-color: var(--border-strong),
+      unselected-hover-icon-color: var(--gray-400),
+      label-text-size: var(--text-base),
+      label-text-color: var(--text-primary),
+    )
+  );
+
+  // Switches keep their form, within the 8px radius limit.
+  @include mat.slide-toggle-overrides(
+    (
+      track-shape: var(--radius-lg),
+      handle-shape: var(--radius-md),
+      selected-track-color: var(--primary-600),
+      selected-hover-track-color: var(--primary-700),
+      selected-focus-track-color: var(--primary-700),
+      selected-pressed-track-color: var(--primary-700),
+      unselected-track-color: var(--gray-200),
+      unselected-hover-track-color: var(--gray-300),
+      unselected-focus-track-color: var(--gray-300),
+      unselected-pressed-track-color: var(--gray-300),
+      track-outline-color: var(--border-strong),
+      unselected-handle-color: var(--gray-0),
+      handle-elevation-shadow: none,
+      label-text-size: var(--text-base),
+    )
+  );
+
+  @include mat.button-toggle-overrides(
+    (
+      shape: var(--radius-md),
+      height: var(--control-md),
+      divider-color: var(--border-strong),
+      selected-state-background-color: var(--surface-selected),
+      selected-state-text-color: var(--primary-700),
+      text-color: var(--text-secondary),
+      label-text-size: var(--text-sm),
+    )
+  );
+
+  @include mat.progress-bar-overrides(
+    (
+      active-indicator-color: var(--primary-600),
+      track-color: var(--primary-100),
+    )
+  );
+
+  @include mat.badge-overrides(
+    (
+      background-color: var(--danger),
+      text-color: var(--gray-0),
+    )
+  );
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Base
+// ---------------------------------------------------------------------------------------------------------------
+// Element defaults live in the 'base' cascade layer, beneath Tailwind's components and utilities, so a utility
+// class on an element (e.g. text-base on an h2) always wins. Material's styles and the overrides below stay
+// unlayered and therefore above both.
+@layer base {
+  // ':root' raises these above Tailwind's preflight resets, which share this layer and load later.
+  body {
+    margin: 0;
+    height: 100%;
+    color-scheme: light;
+    background-color: var(--surface-sunken);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: var(--leading-base);
+    font-weight: var(--weight-regular);
+    font-feature-settings: var(--font-features);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :root h1,
+  :root h2,
+  :root h3,
+  :root h4 {
+    color: var(--text-primary);
+    font-weight: var(--weight-semibold);
+  }
+
+  :root h1 {
+    font-size: var(--text-2xl);
+    line-height: var(--leading-2xl);
+    letter-spacing: var(--tracking-tight);
+  }
+
+  :root h2 {
+    font-size: var(--text-lg);
+    line-height: var(--leading-lg);
+  }
+
+  :root h3 {
+    font-size: var(--text-md);
+    line-height: var(--leading-md);
+  }
+
+  :root a {
+    color: var(--primary-600);
+    text-decoration: none;
+  }
+
+  :root a:hover {
+    text-decoration: underline;
+  }
+
+  code,
+  pre,
+  .font-mono {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+  }
+
+  // Numbers that are compared across rows or read as amounts.
+  table td,
+  .numeric,
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    background: var(--primary-100);
+  }
+}
+
+// Every interactive element shows a visible keyboard focus ring.
+:focus-visible {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 2px;
+}
+
+.mat-mdc-button-base:focus-visible,
+.mat-mdc-icon-button:focus-visible,
+.mat-mdc-menu-item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+// Material draws its own keyboard indicator on buttons; the ring above replaces it.
+.mat-mdc-button-base .mat-focus-indicator::before {
+  display: none;
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Buttons. Variants map onto Material directives:
+//   primary   -> mat-flat-button
+//   secondary -> mat-stroked-button
+//   ghost     -> mat-button
+//   danger    -> mat-flat-button class="btn-danger"
+// Sizes: default 36px; class "btn-sm" = 32px, "btn-lg" = 40px.
+// ---------------------------------------------------------------------------------------------------------------
+.mat-mdc-button-base {
+  text-decoration: none !important;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.mat-mdc-unelevated-button:not(:disabled):hover {
+  background-color: var(--primary-700);
+}
+
+.mat-mdc-outlined-button {
+  background-color: var(--surface);
+}
+
+.mat-mdc-outlined-button:not(:disabled):hover {
+  background-color: var(--surface-hover);
+  border-color: var(--gray-400);
+}
+
+.mat-mdc-button:not(:disabled):hover {
+  background-color: var(--gray-100);
+  color: var(--text-primary);
+}
+
+.mat-mdc-unelevated-button.btn-danger {
+  --mat-button-filled-container-color: var(--danger);
+  --mat-button-filled-disabled-container-color: var(--danger);
+}
+
+.mat-mdc-unelevated-button.btn-danger:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--danger) 88%, var(--gray-900));
+}
+
+.mat-mdc-outlined-button.btn-danger,
+.mat-mdc-button.btn-danger {
+  --mat-button-outlined-label-text-color: var(--danger);
+  --mat-button-text-label-text-color: var(--danger);
+}
+
+// Hover/press feedback comes from the explicit colours above, not Material's state layer.
+.mat-mdc-button-base .mat-mdc-button-persistent-ripple::before {
+  opacity: 0 !important;
+}
+
+// Disabled buttons stay recognisable: the real variant at half opacity.
+.mat-mdc-button-base:disabled,
+.mat-mdc-button-base.mat-mdc-button-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-sm {
+  --mat-button-filled-container-height: var(--control-sm);
+  --mat-button-outlined-container-height: var(--control-sm);
+  --mat-button-text-container-height: var(--control-sm);
+  --mat-button-filled-horizontal-padding: var(--space-3);
+  --mat-button-outlined-horizontal-padding: var(--space-3);
+  --mat-button-text-horizontal-padding: var(--space-2);
+  --mat-button-filled-label-text-size: var(--text-sm);
+  --mat-button-outlined-label-text-size: var(--text-sm);
+  --mat-button-text-label-text-size: var(--text-sm);
+}
+
+.btn-lg {
+  --mat-button-filled-container-height: var(--control-lg);
+  --mat-button-outlined-container-height: var(--control-lg);
+  --mat-button-text-container-height: var(--control-lg);
+}
+
+// Icons inside buttons (lucide via app-icon).
+.mat-mdc-button-base app-icon {
+  margin-inline-start: -2px;
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Form fields: standard product inputs. Labels sit ABOVE the box (14px/500) instead of floating inside it; the
+// field reserves room for the label, the outline is closed (no notch), and focus adds a 3px ring.
+// Defaults (outline appearance, label always shown, dynamic subscript, no required marker) are provided in
+// app.config.ts via MAT_FORM_FIELD_DEFAULT_OPTIONS.
+// ---------------------------------------------------------------------------------------------------------------
+.mat-mdc-form-field.mat-form-field-appearance-outline {
+  --label-gap: 26px; // label line (20px) + 6px gap
+  padding-top: var(--label-gap);
+
+  // Close the notch the floating label would cut into the top border, in the same colour as the rest of the
+  // outline for each state (Material's 'border-top: none' also resets the colour, so it is restated here).
+  .mdc-notched-outline--notched .mdc-notched-outline__notch {
+    border-top: 1px solid var(--border-strong);
+  }
+
+  &:hover .mdc-notched-outline--notched .mdc-notched-outline__notch {
+    border-top-color: var(--gray-400);
+  }
+
+  &.mat-focused .mdc-notched-outline--notched .mdc-notched-outline__notch {
+    border-top-color: var(--primary-500);
+  }
+
+  &.mat-form-field-invalid .mdc-notched-outline--notched .mdc-notched-outline__notch {
+    border-top-color: var(--danger);
+  }
+
+  &.mat-form-field-disabled .mdc-notched-outline--notched .mdc-notched-outline__notch {
+    border-top-color: var(--border);
+  }
+
+  // The notch holds the label; let the label escape it.
+  .mdc-notched-outline__notch {
+    max-width: none !important;
+    overflow: visible !important;
+    clip-path: none !important; // Material clips the notch to its own box, which would cut the label's start
+  }
+
+  // The label, moved above the box: anchored to the top edge of the outline, aligned with its left edge.
+  .mat-mdc-floating-label.mdc-floating-label--float-above,
+  .mdc-floating-label--float-above {
+    // The label is position: relative inside the notch, whose top is the outline's top edge.
+    transform: none !important;
+    top: calc(-1 * (var(--leading-base) + 6px)) !important;
+    left: -12px !important;
+    font-size: var(--text-base) !important;
+    line-height: var(--leading-base);
+    font-weight: var(--weight-medium);
+    color: var(--text-primary) !important;
+    max-width: none !important;
+    overflow: visible;
+    text-overflow: clip;
+    pointer-events: auto;
+  }
+
+  .mat-mdc-text-field-wrapper {
+    background: var(--surface);
+    border-radius: var(--radius-md);
+  }
+
+  // Focus ring.
+  &.mat-focused .mdc-notched-outline {
+    border-radius: var(--radius-md);
+    box-shadow: 0 0 0 3px var(--focus-ring);
+  }
+
+  &.mat-form-field-invalid.mat-focused .mdc-notched-outline {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 30%, transparent);
+  }
+
+  // Fields without a label don't need the label gap.
+  &:not(:has(.mat-mdc-floating-label)) {
+    padding-top: 0;
+  }
+
+  .mat-mdc-form-field-icon-prefix,
+  .mat-mdc-form-field-icon-suffix {
+    color: var(--text-muted);
+    padding: 0 var(--space-2) 0 var(--space-3);
+  }
+
+  .mat-mdc-form-field-icon-suffix {
+    padding: 0 var(--space-3) 0 var(--space-2);
+  }
+}
+
+// Selects match text inputs at 40px (their 24px arrow wrapper would otherwise make them 44px).
+.mat-mdc-form-field-type-mat-select .mat-mdc-form-field-infix {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
+// Stacked fields in forms get breathing room; inline filter fields (outside <form>) do not.
+form .mat-mdc-form-field {
+  margin-bottom: var(--space-4);
+}
+
+textarea.mat-mdc-input-element {
+  min-height: var(--leading-base);
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Overlays: menus, select panels, autocomplete. Hairline border plus the single overlay shadow.
+// ---------------------------------------------------------------------------------------------------------------
+.mat-mdc-menu-panel,
+.mat-mdc-select-panel,
+.mat-mdc-autocomplete-panel {
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-overlay) !important;
+}
+
+.mat-mdc-select-panel {
+  border-radius: var(--radius-lg) !important;
+}
+
+.mat-mdc-menu-item {
+  min-height: var(--control-md);
+}
+
+// Material tables sit inside panels: quiet header band, subtle row hover.
+.mat-mdc-header-row {
+  background: var(--surface-subtle);
+}
+
+.mat-mdc-row:hover .mat-mdc-cell {
+  background: var(--surface-subtle);
+}
+
+.mat-mdc-paginator {
+  border-top: 1px solid var(--border);
+}
+
+.mat-mdc-progress-bar {
+  border-radius: 0;
+}

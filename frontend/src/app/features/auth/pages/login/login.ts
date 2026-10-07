@@ -7,10 +7,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { AuthService } from '../../../../core/auth/auth.service';
+import { Logo } from '../../../../shared/components/logo/logo';
 
 @Component({
   selector: 'app-login',
-  imports: [
+  imports: [Logo, 
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,

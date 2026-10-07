@@ -3,13 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { switchMap, timer } from 'rxjs';
 
 import { environment } from '../../../../../environments/environment';
 import { describeApiError } from '../../../../core/http/api-error';
 import { PageHeader } from '../../../../shared/components/page-header/page-header';
 import { StatusBadge } from '../../../../shared/components/status-badge/status-badge';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 interface Latency {
   name: string;
@@ -50,7 +50,7 @@ const LABELS: Record<string, string> = {
 /** Live operational metrics (design doc §42), from the API's in-process aggregation; refreshes every 30 s. */
 @Component({
   selector: 'app-system-health',
-  imports: [DatePipe, DecimalPipe, PercentPipe, MatButtonModule, MatIconModule, PageHeader, StatusBadge],
+  imports: [Icon, DatePipe, DecimalPipe, PercentPipe, MatButtonModule, PageHeader, StatusBadge],
   templateUrl: './system-health.html',
 })
 export class SystemHealth implements OnInit {

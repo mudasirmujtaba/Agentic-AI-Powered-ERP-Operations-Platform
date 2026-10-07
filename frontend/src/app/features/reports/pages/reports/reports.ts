@@ -3,7 +3,6 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
@@ -14,6 +13,7 @@ import { BarChart, BarPoint } from '../../../../shared/components/bar-chart/bar-
 import { PageHeader } from '../../../../shared/components/page-header/page-header';
 import { formatReportValue, isNumericFormat, ValueFormat } from '../../../../shared/formatting/format';
 import { REPORT_LABELS, Report, ReportKey, ReportTable, ReportsApi, toCsv } from '../../data/reports';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 type Preset = '30d' | '90d' | 'ytd' | '12m' | 'custom';
 
@@ -41,12 +41,11 @@ function rangeFor(preset: Exclude<Preset, 'custom'>): { from: string; to: string
 
 @Component({
   selector: 'app-reports',
-  imports: [
+  imports: [Icon, 
     DatePipe,
     FormsModule,
     MatButtonModule,
     MatFormFieldModule,
-    MatIconModule,
     MatInputModule,
     MatProgressBarModule,
     MatSelectModule,

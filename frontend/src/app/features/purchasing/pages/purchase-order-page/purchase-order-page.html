@@ -3,7 +3,7 @@
     <app-status-badge [label]="statuses[o.status].label" [tone]="statuses[o.status].tone" />
   }
   <a mat-button routerLink="/purchasing">
-    <mat-icon>arrow_back</mat-icon>
+    <app-icon name="arrow-left" />
     Purchase orders
   </a>
 </app-page-header>
@@ -33,13 +33,13 @@
   <div class="mb-4 flex flex-wrap gap-2">
     @if (o.status === 'Draft' && canPurchase()) {
       <button mat-flat-button (click)="submit()" [disabled]="busy()">
-        <mat-icon>send</mat-icon>
+        <app-icon name="send" />
         Submit
       </button>
     }
     @if (o.status === 'PendingApproval' && canApprove()) {
       <button mat-flat-button (click)="approve()" [disabled]="busy()">
-        <mat-icon>verified</mat-icon>
+        <app-icon name="badge-check" />
         Approve
       </button>
       <button mat-stroked-button (click)="showRejectForm.set(!showRejectForm())" [disabled]="busy()">Reject</button>
@@ -49,7 +49,7 @@
     }
     @if ((o.status === 'Ordered' || o.status === 'PartiallyReceived') && canReceive()) {
       <button mat-flat-button (click)="showReceiveForm.set(!showReceiveForm())" [disabled]="busy()">
-        <mat-icon>inventory</mat-icon>
+        <app-icon name="package" />
         Receive goods
       </button>
     }

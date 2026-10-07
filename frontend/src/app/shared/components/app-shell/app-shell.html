@@ -1,11 +1,7 @@
 <div class="shell">
   <aside class="sidebar" aria-label="Main navigation">
     <a routerLink="/dashboard" class="brand" aria-label="OpsPilot home">
-      <span class="brand-mark" aria-hidden="true">OP</span>
-      <span class="brand-text">
-        <span class="brand-name">OpsPilot</span>
-        <span class="brand-sub">Operations Platform</span>
-      </span>
+      <app-logo variant="dark" [size]="24" />
     </a>
 
     <nav class="nav">
@@ -21,7 +17,7 @@
               #rla="routerLinkActive"
               [attr.aria-current]="rla.isActive ? 'page' : null"
             >
-              <mat-icon class="nav-icon">{{ link.icon }}</mat-icon>
+              <app-icon [name]="link.icon" [size]="20" class="nav-icon" />
               <span>{{ link.label }}</span>
             </a>
           }
@@ -37,7 +33,7 @@
       <div class="context">
         @if (section(); as s) {
           <span class="context-group">{{ s.group }}</span>
-          <mat-icon class="context-sep" aria-hidden="true">chevron_right</mat-icon>
+          <app-icon name="chevron-right" class="context-sep" />
           <span class="context-page">{{ s.label }}</span>
         }
       </div>
@@ -50,7 +46,7 @@
             <span class="user-name">{{ displayName() }}</span>
             <span class="user-role">{{ roleLabel() }}</span>
           </span>
-          <mat-icon class="user-caret" aria-hidden="true">expand_more</mat-icon>
+          <app-icon name="chevron-down" class="user-caret" />
         </button>
         <mat-menu #userMenu="matMenu" xPosition="before">
           @if (authService.currentUser(); as user) {
@@ -60,7 +56,7 @@
             </div>
           }
           <button mat-menu-item (click)="logout()">
-            <mat-icon>logout</mat-icon>
+            <app-icon name="log-out" />
             <span>Sign out</span>
           </button>
         </mat-menu>

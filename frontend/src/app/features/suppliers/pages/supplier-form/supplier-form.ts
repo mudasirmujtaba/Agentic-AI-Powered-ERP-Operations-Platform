@@ -2,7 +2,6 @@ import { Component, OnInit, computed, inject, input, signal } from '@angular/cor
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -16,15 +15,15 @@ import { PageHeader } from '../../../../shared/components/page-header/page-heade
 import { firstError } from '../../../../shared/forms/form-errors';
 import { SuppliersApi } from '../../data/suppliers.api';
 import { SaveSupplierRequest } from '../../data/suppliers.models';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 @Component({
   selector: 'app-supplier-form',
-  imports: [
+  imports: [Icon, 
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
     MatFormFieldModule,
-    MatIconModule,
     MatInputModule,
     MatProgressBarModule,
     MatSlideToggleModule,

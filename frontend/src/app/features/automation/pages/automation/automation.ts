@@ -2,7 +2,6 @@ import { DatePipe } from '@angular/common';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { filter, interval, switchMap, take, timeout } from 'rxjs';
@@ -15,13 +14,14 @@ import { BadgeTone, StatusBadge } from '../../../../shared/components/status-bad
 import { MarkdownLitePipe } from '../../../../shared/pipes/markdown-lite.pipe';
 import { AutomationApi } from '../../data/automation.api';
 import { InsightReport, JobStatus, RiskLevel } from '../../data/automation.models';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 const RISK_TONES: Record<RiskLevel, BadgeTone> = { critical: 'danger', high: 'danger', medium: 'warning', ok: 'success' };
 const STATE_TONES: Record<string, BadgeTone> = { Succeeded: 'success', Failed: 'danger', Processing: 'warning', Enqueued: 'warning' };
 
 @Component({
   selector: 'app-automation',
-  imports: [DatePipe, MatButtonModule, MatIconModule, MatProgressBarModule, MarkdownLitePipe, PageHeader, StatusBadge],
+  imports: [Icon, DatePipe, MatButtonModule, MatProgressBarModule, MarkdownLitePipe, PageHeader, StatusBadge],
   templateUrl: './automation.html',
   styles: `
     :host ::ng-deep .answer p { margin: 0 0 0.5rem; }

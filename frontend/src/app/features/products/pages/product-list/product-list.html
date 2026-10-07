@@ -1,10 +1,10 @@
 <app-page-header title="Products" subtitle="Catalog, pricing and reorder thresholds">
   <a mat-button routerLink="/products/categories">
-    <mat-icon>category</mat-icon>
+    <app-icon name="shapes" />
     Categories
   </a>
   <button *appHasRole="writeAccess" mat-flat-button routerLink="/products/new">
-    <mat-icon>add</mat-icon>
+    <app-icon name="plus" />
     New product
   </button>
 </app-page-header>
@@ -12,7 +12,7 @@
 <div class="flex flex-wrap gap-4">
   <mat-form-field appearance="outline" class="w-full max-w-sm" subscriptSizing="dynamic">
     <mat-label>Search</mat-label>
-    <mat-icon matPrefix>search</mat-icon>
+    <app-icon name="search" matPrefix />
     <input matInput placeholder="Code or name" (input)="list.onSearch($any($event.target).value)" />
   </mat-form-field>
 

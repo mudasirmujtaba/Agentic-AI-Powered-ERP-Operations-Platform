@@ -3,7 +3,7 @@
     <app-status-badge [label]="statuses[o.status].label" [tone]="statuses[o.status].tone" />
   }
   <a mat-button routerLink="/sales">
-    <mat-icon>arrow_back</mat-icon>
+    <app-icon name="arrow-left" />
     Sales orders
   </a>
 </app-page-header>
@@ -21,7 +21,7 @@
   <div class="mb-4 flex flex-wrap gap-2">
     @if (o.status === 'Draft' && canSell()) {
       <button mat-flat-button (click)="confirm()" [disabled]="busy()">
-        <mat-icon>check</mat-icon>
+        <app-icon name="check" />
         Confirm & reserve stock
       </button>
     }
@@ -30,7 +30,7 @@
     }
     @if ((o.status === 'Confirmed' || o.status === 'Processing') && canFulfil()) {
       <button mat-flat-button (click)="showShipForm.set(!showShipForm())" [disabled]="busy()">
-        <mat-icon>local_shipping</mat-icon>
+        <app-icon name="truck" />
         Ship
       </button>
     }
@@ -39,13 +39,13 @@
     }
     @if ((o.status === 'Shipped' || o.status === 'Delivered') && !o.invoiceId && canInvoice()) {
       <button mat-flat-button (click)="createInvoice()" [disabled]="busy()">
-        <mat-icon>receipt_long</mat-icon>
+        <app-icon name="receipt-text" />
         Create invoice
       </button>
     }
     @if (o.invoiceId) {
       <a mat-stroked-button [routerLink]="['/finance/invoices', o.invoiceId]">
-        <mat-icon>receipt_long</mat-icon>
+        <app-icon name="receipt-text" />
         Invoice {{ o.invoiceNumber }}
       </a>
     }

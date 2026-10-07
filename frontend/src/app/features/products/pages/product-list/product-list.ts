@@ -3,7 +3,6 @@ import { Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -20,15 +19,15 @@ import { createPagedList } from '../../../../shared/data/paged-list';
 import { HasRoleDirective } from '../../../../shared/directives/has-role.directive';
 import { CategoriesApi, ProductsApi } from '../../data/catalog.api';
 import { ProductListItem } from '../../data/catalog.models';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 @Component({
   selector: 'app-product-list',
-  imports: [
+  imports: [Icon, 
     CurrencyPipe,
     RouterLink,
     MatButtonModule,
     MatFormFieldModule,
-    MatIconModule,
     MatInputModule,
     MatPaginatorModule,
     MatProgressBarModule,

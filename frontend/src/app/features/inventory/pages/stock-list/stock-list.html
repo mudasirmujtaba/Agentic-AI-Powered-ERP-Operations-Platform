@@ -1,6 +1,6 @@
 <app-page-header title="Inventory" subtitle="Stock on hand, reserved for open orders, and available to promise">
   <a mat-button routerLink="/inventory/warehouses">
-    <mat-icon>warehouse</mat-icon>
+    <app-icon name="warehouse" />
     Warehouses
   </a>
 </app-page-header>
@@ -8,7 +8,7 @@
 <div class="flex flex-wrap items-center gap-4">
   <mat-form-field appearance="outline" class="w-full max-w-sm" subscriptSizing="dynamic">
     <mat-label>Search</mat-label>
-    <mat-icon matPrefix>search</mat-icon>
+    <app-icon name="search" matPrefix />
     <input matInput placeholder="Product code or name" (input)="list.onSearch($any($event.target).value)" />
   </mat-form-field>
 

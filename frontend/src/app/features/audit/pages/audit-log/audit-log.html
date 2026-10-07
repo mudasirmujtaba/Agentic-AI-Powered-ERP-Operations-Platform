@@ -3,7 +3,7 @@
 <div class="flex flex-wrap items-center gap-4">
   <mat-form-field appearance="outline" class="w-full max-w-sm" subscriptSizing="dynamic">
     <mat-label>Search</mat-label>
-    <mat-icon matPrefix>search</mat-icon>
+    <app-icon name="search" matPrefix />
     <input matInput placeholder="Document number, user or action" (input)="list.onSearch($any($event.target).value)" />
   </mat-form-field>
 

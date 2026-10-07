@@ -4,7 +4,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormArray, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
@@ -32,17 +31,17 @@ import { WarehousesApi } from '../../../inventory/warehouses/data/warehouses.api
 import { ProductsApi } from '../../../products/data/catalog.api';
 import { SalesOrdersApi } from '../../data/sales.api';
 import { SalesOrder, SaveSalesOrderRequest } from '../../data/sales.models';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 @Component({
   selector: 'app-sales-order-page',
-  imports: [
+  imports: [Icon, 
     CurrencyPipe,
     DatePipe,
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
     MatFormFieldModule,
-    MatIconModule,
     MatInputModule,
     MatProgressBarModule,
     MatSelectModule,

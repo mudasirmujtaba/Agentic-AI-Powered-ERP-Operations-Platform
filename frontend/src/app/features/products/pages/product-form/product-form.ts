@@ -9,7 +9,6 @@ import {
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
@@ -26,6 +25,7 @@ import { firstError } from '../../../../shared/forms/form-errors';
 import { SuppliersApi } from '../../../suppliers/data/suppliers.api';
 import { CategoriesApi, ProductsApi } from '../../data/catalog.api';
 import { SaveProductRequest } from '../../data/catalog.models';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 function safetyStockWithinReorderPoint(group: AbstractControl): ValidationErrors | null {
   const reorderPoint = group.get('reorderPoint')?.value;
@@ -37,12 +37,11 @@ function safetyStockWithinReorderPoint(group: AbstractControl): ValidationErrors
 
 @Component({
   selector: 'app-product-form',
-  imports: [
+  imports: [Icon, 
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
     MatFormFieldModule,
-    MatIconModule,
     MatInputModule,
     MatProgressBarModule,
     MatSelectModule,

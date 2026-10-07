@@ -1,6 +1,6 @@
 <app-page-header [title]="title()" [subtitle]="isNew() ? 'Create a customer account' : 'Customer details'">
   <a mat-button routerLink="/customers">
-    <mat-icon>arrow_back</mat-icon>
+    <app-icon name="arrow-left" />
     Back to customers
   </a>
 </app-page-header>
@@ -76,7 +76,7 @@
       <h2 class="m-0 text-lg font-medium">Addresses</h2>
       @if (canEdit()) {
         <button mat-stroked-button type="button" (click)="addAddress()">
-          <mat-icon>add</mat-icon>
+          <app-icon name="plus" />
           Add address
         </button>
       }
@@ -137,7 +137,7 @@
             <mat-checkbox formControlName="isDefault">Default for this type</mat-checkbox>
             @if (canEdit()) {
               <button mat-button type="button" (click)="removeAddress(i)">
-                <mat-icon>delete</mat-icon>
+                <app-icon name="trash-2" />
                 Remove
               </button>
             }

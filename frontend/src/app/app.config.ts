@@ -5,7 +5,7 @@ import {
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
-import { MatIconRegistry } from '@angular/material/icon';
+import { MAT_FORM_FIELD_DEFAULT_OPTIONS, MatFormFieldDefaultOptions } from '@angular/material/form-field';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
@@ -18,10 +18,17 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withInterceptors([jwtInterceptor])),
-    // Outlined Material Symbols: lighter and more consistent than the legacy Material Icons font.
-    provideAppInitializer(() => {
-      inject(MatIconRegistry).setDefaultFontSetClass('material-symbols-outlined');
-    }),
+    // Product-style inputs: outlined, label always shown (styled above the box), error text only when present,
+    // no required asterisks (optional fields say "(optional)" in their label instead).
+    {
+      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+      useValue: {
+        appearance: 'outline',
+        floatLabel: 'always',
+        subscriptSizing: 'dynamic',
+        hideRequiredMarker: true,
+      } satisfies MatFormFieldDefaultOptions,
+    },
     provideAppInitializer(() => firstValueFrom(inject(AuthService).restoreSession())),
   ],
 };

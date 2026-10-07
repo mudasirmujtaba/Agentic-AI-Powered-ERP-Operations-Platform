@@ -2,7 +2,6 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -19,16 +18,16 @@ import { HasRoleDirective } from '../../../../shared/directives/has-role.directi
 import { PURCHASE_ORDER_STATUSES, statusOptions, StatusStyle } from '../../../../shared/models/statuses';
 import { PurchaseOrdersApi } from '../../data/purchasing.api';
 import { PurchaseOrderListItem } from '../../data/purchasing.models';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 @Component({
   selector: 'app-purchase-order-list',
-  imports: [
+  imports: [Icon, 
     CurrencyPipe,
     DatePipe,
     RouterLink,
     MatButtonModule,
     MatFormFieldModule,
-    MatIconModule,
     MatInputModule,
     MatPaginatorModule,
     MatProgressBarModule,

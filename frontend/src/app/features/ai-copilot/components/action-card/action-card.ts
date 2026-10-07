@@ -3,7 +3,6 @@ import { Component, computed, effect, inject, input, output, signal } from '@ang
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { RouterLink } from '@angular/router';
 
@@ -13,6 +12,7 @@ import { describeApiError } from '../../../../core/http/api-error';
 import { BadgeTone, StatusBadge } from '../../../../shared/components/status-badge/status-badge';
 import { AiApi } from '../../data/ai.api';
 import { AiAction, AiActionStatus } from '../../data/ai.models';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 const STATUS: Record<AiActionStatus, { label: string; tone: BadgeTone }> = {
   Pending: { label: 'Awaiting approval', tone: 'warning' },
@@ -28,7 +28,7 @@ const STATUS: Record<AiActionStatus, { label: string; tone: BadgeTone }> = {
  */
 @Component({
   selector: 'app-action-card',
-  imports: [CurrencyPipe, DatePipe, FormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, StatusBadge],
+  imports: [Icon, CurrencyPipe, DatePipe, FormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatInputModule, StatusBadge],
   templateUrl: './action-card.html',
 })
 export class ActionCard {

@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="OpsPilot">
+  <!-- OpsPilot logomark: a compass needle heading north-east, knocked out of a rounded tile. Single colour (primary-600). -->
+  <path fill="#2449C9" fill-rule="evenodd" d="M5.5 1h13A4.5 4.5 0 0 1 23 5.5v13a4.5 4.5 0 0 1-4.5 4.5h-13A4.5 4.5 0 0 1 1 18.5v-13A4.5 4.5 0 0 1 5.5 1ZM17.233 6.767 14.333 13.485 10.515 9.667ZM9.667 10.515 13.485 14.333 6.767 17.233Z"/>
+</svg>

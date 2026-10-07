@@ -2,7 +2,6 @@ import { Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -20,14 +19,14 @@ import { STOCK_STATUSES, StatusStyle } from '../../../../shared/models/statuses'
 import { WarehousesApi } from '../../warehouses/data/warehouses.api';
 import { InventoryApi } from '../../data/inventory.api';
 import { StockLevel } from '../../data/inventory.models';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 @Component({
   selector: 'app-stock-list',
-  imports: [
+  imports: [Icon, 
     RouterLink,
     MatButtonModule,
     MatFormFieldModule,
-    MatIconModule,
     MatInputModule,
     MatPaginatorModule,
     MatProgressBarModule,

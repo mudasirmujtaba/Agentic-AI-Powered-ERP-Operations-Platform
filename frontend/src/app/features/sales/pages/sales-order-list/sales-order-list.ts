@@ -2,7 +2,6 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -20,16 +19,16 @@ import { HasRoleDirective } from '../../../../shared/directives/has-role.directi
 import { SALES_ORDER_STATUSES, statusOptions, StatusStyle } from '../../../../shared/models/statuses';
 import { SalesOrdersApi } from '../../data/sales.api';
 import { SalesOrderListItem } from '../../data/sales.models';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 @Component({
   selector: 'app-sales-order-list',
-  imports: [
+  imports: [Icon, 
     CurrencyPipe,
     DatePipe,
     RouterLink,
     MatButtonModule,
     MatFormFieldModule,
-    MatIconModule,
     MatInputModule,
     MatPaginatorModule,
     MatProgressBarModule,

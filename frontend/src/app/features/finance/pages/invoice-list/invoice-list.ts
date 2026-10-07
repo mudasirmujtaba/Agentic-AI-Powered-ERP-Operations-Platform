@@ -1,7 +1,6 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -17,14 +16,14 @@ import { createPagedList } from '../../../../shared/data/paged-list';
 import { INVOICE_STATUSES, OVERDUE_STATUS, statusOptions, StatusStyle } from '../../../../shared/models/statuses';
 import { InvoicesApi } from '../../data/finance.api';
 import { InvoiceListItem } from '../../data/finance.models';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 @Component({
   selector: 'app-invoice-list',
-  imports: [
+  imports: [Icon, 
     CurrencyPipe,
     DatePipe,
     MatFormFieldModule,
-    MatIconModule,
     MatInputModule,
     MatPaginatorModule,
     MatProgressBarModule,

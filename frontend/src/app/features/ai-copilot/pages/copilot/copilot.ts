@@ -2,7 +2,6 @@ import { DatePipe } from '@angular/common';
 import { Component, ElementRef, OnInit, inject, input, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router, RouterLink } from '@angular/router';
 
@@ -10,6 +9,8 @@ import { describeApiError } from '../../../../core/http/api-error';
 import { AssistantMessage } from '../../components/assistant-message/assistant-message';
 import { AiApi } from '../../data/ai.api';
 import { AiConversationSummary, AiMessage } from '../../data/ai.models';
+import { Icon } from '../../../../shared/components/icon/icon';
+import { Logo } from '../../../../shared/components/logo/logo';
 
 const SUGGESTIONS = [
   'Which products are running low?',
@@ -22,7 +23,7 @@ const SUGGESTIONS = [
 
 @Component({
   selector: 'app-copilot',
-  imports: [DatePipe, FormsModule, RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, AssistantMessage],
+  imports: [Logo, Icon, DatePipe, FormsModule, RouterLink, MatButtonModule, MatProgressBarModule, AssistantMessage],
   templateUrl: './copilot.html',
   styleUrl: './copilot.css',
 })

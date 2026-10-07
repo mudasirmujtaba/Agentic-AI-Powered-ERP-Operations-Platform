@@ -1,6 +1,6 @@
 <app-page-header [title]="greeting()" subtitle="Sales, stock, receivables and purchasing at a glance">
   <a mat-stroked-button routerLink="/reports">
-    <mat-icon>bar_chart</mat-icon>
+    <app-icon name="chart-column" />
     Reports
   </a>
 </app-page-header>
@@ -22,7 +22,7 @@
         <span class="kpi-hint">{{ tile.detail }}</span>
         @if (tile.alert; as alert) {
           <span class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-amber-700">
-            <mat-icon class="!h-4 !w-4 !text-base" aria-hidden="true">{{ alert.icon }}</mat-icon>
+            <app-icon [name]="alert.icon" />
             {{ alert.text }}
           </span>
         }

@@ -4,7 +4,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
@@ -22,18 +21,18 @@ import { STOCK_STATUSES } from '../../../../shared/models/statuses';
 import { WarehousesApi } from '../../warehouses/data/warehouses.api';
 import { InventoryApi } from '../../data/inventory.api';
 import { ProductStock } from '../../data/inventory.models';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 type Panel = 'adjust' | 'transfer' | null;
 
 @Component({
   selector: 'app-product-stock',
-  imports: [
+  imports: [Icon, 
     DatePipe,
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
     MatFormFieldModule,
-    MatIconModule,
     MatInputModule,
     MatProgressBarModule,
     MatSelectModule,

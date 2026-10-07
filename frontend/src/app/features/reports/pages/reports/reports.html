@@ -74,7 +74,7 @@
           <h2 class="panel-title">{{ table.title }}</h2>
           @if (table.rows.length) {
             <button mat-stroked-button (click)="exportCsv(table)">
-              <mat-icon>download</mat-icon>
+              <app-icon name="download" />
               Export CSV
             </button>
           }

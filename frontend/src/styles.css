@@ -1,78 +1,213 @@
 @import 'tailwindcss';
 
-/* Design tokens shared by Tailwind utilities and component styles. */
+/*
+ * Tailwind is mapped onto the design tokens (src/styles/_tokens.scss): every colour, radius and shadow utility
+ * resolves to a token. The raw palettes (slate, gray, red, amber, emerald, green, blue, indigo) are re-pointed at
+ * the neutral scale and the muted semantic colours so legacy utilities cannot introduce off-system colours.
+ * Prefer the semantic names (fg, fg-secondary, muted, line, surface, brand-*) in new code.
+ */
 @theme {
-  --font-sans: Inter, 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Cascadia Mono', Consolas, ui-monospace, monospace;
-  --color-brand-50: #f0f4fe;
-  --color-brand-100: #e5ecfd;
-  --color-brand-600: #1e4fd8;
-  --color-brand-700: #173fae;
-  --color-ink: #0f172a;
-  --color-muted: #64748b;
-  --color-line: #e2e8f0;
-  --color-canvas: #f4f6f9;
-  --color-sidebar: #0f1b2d;
-}
+  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', Consolas, 'SFMono-Regular', monospace;
 
-@layer base {
-  h1, h2, h3 { color: var(--color-ink); letter-spacing: -0.01em; }
-  a { color: var(--color-brand-600); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  .mat-mdc-button-base, .mat-mdc-button-base:hover, a.mat-mdc-list-item:hover { text-decoration: none; }
-  .font-mono { font-size: 0.92em; }
-  ::selection { background: #cfdcfb; }
+  /* Type scale: 12/16, 13/18, 14/20, 16/24, 18/26, 20/28, 24/32, 30/38 */
+  --text-xs: 12px;
+  --text-xs--line-height: 16px;
+  --text-sm: 13px;
+  --text-sm--line-height: 18px;
+  --text-base: 14px;
+  --text-base--line-height: 20px;
+  --text-md: 16px;
+  --text-md--line-height: 24px;
+  --text-lg: 18px;
+  --text-lg--line-height: 26px;
+  --text-xl: 20px;
+  --text-xl--line-height: 28px;
+  --text-2xl: 24px;
+  --text-2xl--line-height: 32px;
+  --text-3xl: 30px;
+  --text-3xl--line-height: 38px;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 600;
+
+  /* Radius: nothing above 8px */
+  --radius-xs: 4px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 8px;
+  --radius-2xl: 8px;
+  --radius-3xl: 8px;
+  --radius-4xl: 8px;
+
+  /* Shadows: only the overlay shadow exists */
+  --shadow-2xs: none;
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow-md: var(--shadow-overlay);
+  --shadow-lg: var(--shadow-overlay);
+  --shadow-xl: var(--shadow-overlay);
+  --shadow-2xl: var(--shadow-overlay);
+
+  /* Semantic colours */
+  --color-fg: var(--text-primary);
+  --color-fg-secondary: var(--text-secondary);
+  --color-muted: var(--text-muted);
+  --color-ink: var(--text-primary);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-canvas: var(--surface-sunken);
+  --color-sidebar: var(--ink-900);
+  --color-brand-50: var(--primary-50);
+  --color-brand-100: var(--primary-100);
+  --color-brand-500: var(--primary-500);
+  --color-brand-600: var(--primary-600);
+  --color-brand-700: var(--primary-700);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-white: var(--gray-0);
+
+  /* Raw neutral palettes -> neutral tokens */
+  --color-slate-50: var(--gray-50);
+  --color-slate-100: var(--gray-100);
+  --color-slate-200: var(--gray-200);
+  --color-slate-300: var(--gray-300);
+  --color-slate-400: var(--gray-400);
+  --color-slate-500: var(--gray-500);
+  --color-slate-600: var(--gray-600);
+  --color-slate-700: var(--gray-700);
+  --color-slate-800: var(--gray-800);
+  --color-slate-900: var(--gray-900);
+  --color-gray-50: var(--gray-50);
+  --color-gray-100: var(--gray-100);
+  --color-gray-200: var(--gray-200);
+  --color-gray-300: var(--gray-300);
+  --color-gray-400: var(--gray-400);
+  --color-gray-500: var(--gray-500);
+  --color-gray-600: var(--gray-600);
+  --color-gray-700: var(--gray-700);
+  --color-gray-800: var(--gray-800);
+  --color-gray-900: var(--gray-900);
+
+  /* Raw hue palettes -> muted semantic colours (status only) */
+  --color-red-50: var(--danger-bg);
+  --color-red-100: var(--danger-bg);
+  --color-red-200: color-mix(in srgb, var(--danger) 25%, var(--gray-0));
+  --color-red-500: var(--danger);
+  --color-red-600: var(--danger);
+  --color-red-700: var(--danger);
+  --color-red-800: var(--danger);
+  --color-amber-50: var(--warning-bg);
+  --color-amber-100: var(--warning-bg);
+  --color-amber-200: color-mix(in srgb, var(--warning) 25%, var(--gray-0));
+  --color-amber-500: var(--warning);
+  --color-amber-600: var(--warning);
+  --color-amber-700: var(--warning);
+  --color-amber-800: var(--warning);
+  --color-emerald-50: var(--success-bg);
+  --color-emerald-100: var(--success-bg);
+  --color-emerald-200: color-mix(in srgb, var(--success) 25%, var(--gray-0));
+  --color-emerald-500: var(--success);
+  --color-emerald-700: var(--success);
+  --color-emerald-800: var(--success);
+  --color-green-50: var(--success-bg);
+  --color-green-100: var(--success-bg);
+  --color-green-200: color-mix(in srgb, var(--success) 25%, var(--gray-0));
+  --color-green-700: var(--success);
+  --color-green-800: var(--success);
+  --color-blue-50: var(--primary-50);
+  --color-blue-100: var(--primary-100);
+  --color-blue-200: color-mix(in srgb, var(--primary-600) 25%, var(--gray-0));
+  --color-blue-500: var(--primary-500);
+  --color-blue-600: var(--primary-600);
+  --color-blue-700: var(--primary-700);
+  --color-blue-800: var(--primary-700);
+  --color-blue-900: var(--primary-700);
+  --color-indigo-50: var(--primary-50);
+  --color-indigo-200: color-mix(in srgb, var(--primary-600) 25%, var(--gray-0));
+  --color-indigo-700: var(--primary-700);
 }
 
 @layer components {
-  /* The standard content surface: white, hairline border, small radius, no shadow. */
+  /* The standard content surface: white, 1px border, 6px radius, no shadow. */
   .panel {
-    @apply rounded-lg border border-line bg-white;
+    @apply rounded-md border border-line bg-surface;
   }
   .panel-header {
     @apply flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3;
   }
   .panel-title {
-    @apply m-0 text-sm font-semibold text-ink;
+    @apply m-0 text-base font-semibold text-fg;
   }
-  .panel-body { @apply p-4; }
+  .panel-body {
+    @apply p-4;
+  }
 
-  /* Plain HTML data tables inside panels, matching mat-table. */
-  .data-table { @apply w-full border-collapse text-[13.5px]; }
-  .data-table th {
-    @apply border-b border-line bg-slate-50 px-3 py-2 text-left text-xs font-semibold text-slate-600;
+  /* Plain HTML data tables, matching mat-table. */
+  .data-table {
+    @apply w-full border-collapse text-sm;
   }
-  .data-table td { @apply border-b border-slate-100 px-3 py-2.5 align-middle; }
-  .data-table tbody tr:last-child td { @apply border-b-0; }
-  .data-table tbody tr:hover td { @apply bg-slate-50/70; }
+  .data-table th {
+    @apply border-b border-line bg-surface-subtle px-3 py-2 text-left text-xs font-semibold text-fg-secondary;
+  }
+  .data-table td {
+    @apply border-b border-slate-100 px-3 py-2 align-middle tabular-nums;
+  }
+  .data-table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+  .data-table tbody tr:hover td {
+    @apply bg-surface-subtle;
+  }
 
   /* Key figure tiles. */
-  .kpi { @apply flex flex-col gap-1 rounded-lg border border-line bg-white p-4; }
-  .kpi-label { @apply text-xs font-medium uppercase tracking-wide text-muted; }
-  .kpi-value { @apply text-2xl font-semibold tracking-tight text-ink tabular-nums; }
-  .kpi-hint { @apply text-xs text-muted; }
+  .kpi {
+    @apply flex flex-col gap-1 rounded-md border border-line bg-surface p-4;
+  }
+  .kpi-label {
+    @apply text-xs font-medium text-muted;
+  }
+  .kpi-value {
+    @apply text-2xl font-semibold tracking-tight text-fg tabular-nums;
+  }
+  .kpi-hint {
+    @apply text-xs text-muted;
+  }
 
-  /* Definition lists for record details. */
-  .details { @apply m-0 grid gap-x-6 gap-y-3 text-sm; }
-  .details dt { @apply text-xs font-medium text-muted; }
-  .details dd { @apply m-0 mt-0.5 text-ink; }
+  /* Record details. */
+  .details {
+    @apply m-0 grid gap-x-6 gap-y-3 text-sm;
+  }
+  .details dt {
+    @apply text-xs font-medium text-muted;
+  }
+  .details dd {
+    @apply m-0 mt-1 text-fg;
+  }
 
-  .muted { @apply text-muted; }
-  .numeric { @apply tabular-nums; }
+  .muted {
+    @apply text-muted;
+  }
+  .numeric {
+    @apply tabular-nums;
+  }
+
+  /* Clickable KPI tiles. */
+  .tile-link {
+    @apply text-inherit no-underline transition-colors;
+  }
+  .tile-link:hover {
+    @apply border-line-strong bg-surface-subtle no-underline;
+  }
 }
-
-/* Material tables sit inside panels; give header rows the same treatment as .data-table. */
-.mat-mdc-header-row { background: #f8fafc; }
-.mat-mdc-header-cell { letter-spacing: 0.01em; }
-.mat-mdc-row:hover .mat-mdc-cell { background: #f8fafc; }
-.mat-mdc-paginator { border-top: 1px solid var(--color-line); }
-
-/* Snack bars: dark, compact. */
-.mat-mdc-snack-bar-container { --mdc-snackbar-container-color: #0f172a; }
-
-.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; }
-
-/* Clickable KPI tiles. */
-.tile-link { color: inherit !important; text-decoration: none !important; transition: border-color 120ms ease, background-color 120ms ease; }
-.tile-link:hover { border-color: #cbd5e1; background: #fbfcfd; }
-.tile-link:focus-visible { outline: 2px solid var(--color-brand-600); outline-offset: 2px; }

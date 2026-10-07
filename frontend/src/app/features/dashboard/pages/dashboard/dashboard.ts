@@ -1,7 +1,6 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { RouterLink } from '@angular/router';
 
@@ -13,20 +12,21 @@ import { SALES_ORDER_STATUSES, STOCK_STATUSES } from '../../../../shared/models/
 import { BarChart, BarPoint } from '../../../../shared/components/bar-chart/bar-chart';
 import { DashboardApi } from '../../data/dashboard.api';
 import { DashboardSummary } from '../../data/dashboard.models';
+import { Icon, IconName } from '../../../../shared/components/icon/icon';
 
 interface KpiTile {
   label: string;
   value: string;
   detail: string;
   /** Present only when something needs attention; always shown with an icon and words, never color alone. */
-  alert?: { icon: string; text: string } | undefined;
+  alert?: { icon: IconName; text: string } | undefined;
   link: string;
   queryParams?: Record<string, string> | undefined;
 }
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CurrencyPipe, DatePipe, RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, PageHeader, StatusBadge, BarChart],
+  imports: [Icon, CurrencyPipe, DatePipe, RouterLink, MatButtonModule, MatProgressBarModule, PageHeader, StatusBadge, BarChart],
   templateUrl: './dashboard.html',
 })
 export class Dashboard {
@@ -70,7 +70,7 @@ export class Dashboard {
         label: 'Open sales orders',
         value: `${s.openSalesOrders}`,
         detail: `${s.ordersLast30Days} orders in the last 30 days`,
-        alert: s.lateSalesOrders > 0 ? { icon: 'schedule', text: `${s.lateSalesOrders} past required date` } : undefined,
+        alert: s.lateSalesOrders > 0 ? { icon: 'clock', text: `${s.lateSalesOrders} past required date` } : undefined,
         link: '/sales',
         queryParams: s.lateSalesOrders > 0 ? { lateOnly: 'true' } : undefined,
       },
@@ -78,7 +78,7 @@ export class Dashboard {
         label: 'Products to reorder',
         value: `${s.lowStockProducts}`,
         detail: 'At or below reorder point',
-        alert: s.outOfStockProducts > 0 ? { icon: 'error', text: `${s.outOfStockProducts} out of stock` } : undefined,
+        alert: s.outOfStockProducts > 0 ? { icon: 'circle-alert', text: `${s.outOfStockProducts} out of stock` } : undefined,
         link: '/inventory',
         queryParams: { lowStockOnly: 'true' },
       },
@@ -86,7 +86,7 @@ export class Dashboard {
         label: 'Outstanding receivables',
         value: usd(s.outstandingReceivables),
         detail: 'Issued and partially paid invoices',
-        alert: s.overdueInvoices > 0 ? { icon: 'warning', text: `${s.overdueInvoices} overdue · ${usd(s.overdueAmount)}` } : undefined,
+        alert: s.overdueInvoices > 0 ? { icon: 'triangle-alert', text: `${s.overdueInvoices} overdue · ${usd(s.overdueAmount)}` } : undefined,
         link: '/finance',
         queryParams: s.overdueInvoices > 0 ? { overdueOnly: 'true' } : undefined,
       },
@@ -94,7 +94,7 @@ export class Dashboard {
         label: 'Purchase approvals',
         value: `${s.pendingPurchaseApprovals}`,
         detail: `${s.openPurchaseOrders} purchase orders in progress`,
-        alert: s.pendingPurchaseApprovals > 0 ? { icon: 'pending_actions', text: 'Waiting for a manager' } : undefined,
+        alert: s.pendingPurchaseApprovals > 0 ? { icon: 'hourglass', text: 'Waiting for a manager' } : undefined,
         link: '/purchasing',
         queryParams: { status: 'PendingApproval' },
       },

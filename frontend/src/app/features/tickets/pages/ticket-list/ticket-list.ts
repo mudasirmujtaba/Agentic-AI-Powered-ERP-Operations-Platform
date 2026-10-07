@@ -3,7 +3,6 @@ import { Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -31,15 +30,15 @@ import {
 import { MarkdownLitePipe } from '../../../../shared/pipes/markdown-lite.pipe';
 import { TicketsApi } from '../../data/tickets.api';
 import { TicketInsights, TicketListItem, TicketStats } from '../../data/tickets.models';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 @Component({
   selector: 'app-ticket-list',
-  imports: [
+  imports: [Icon, 
     DatePipe,
     RouterLink,
     MatButtonModule,
     MatFormFieldModule,
-    MatIconModule,
     MatInputModule,
     MatPaginatorModule,
     MatProgressBarModule,

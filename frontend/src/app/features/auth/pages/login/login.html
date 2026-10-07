@@ -1,9 +1,6 @@
 <div class="login">
   <section class="brand-panel" aria-hidden="true">
-    <div class="brand-row">
-      <span class="brand-mark">OP</span>
-      <span class="brand-name">OpsPilot</span>
-    </div>
+    <app-logo variant="dark" [size]="28" />
 
     <div class="pitch">
       <h2>Run sales, supply chain and finance from one place.</h2>
@@ -41,7 +38,7 @@
           <p class="error" role="alert">{{ errorMessage() }}</p>
         }
 
-        <button mat-flat-button type="submit" class="submit" [disabled]="form.invalid || isSubmitting()">
+        <button mat-flat-button type="submit" class="submit btn-lg" [disabled]="form.invalid || isSubmitting()">
           @if (isSubmitting()) {
             <mat-spinner diameter="18" />
           } @else {

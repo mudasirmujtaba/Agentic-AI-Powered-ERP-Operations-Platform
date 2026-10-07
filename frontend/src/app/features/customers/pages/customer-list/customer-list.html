@@ -1,13 +1,13 @@
 <app-page-header title="Customers" subtitle="Customer accounts, credit limits and addresses">
   <button *appHasRole="writeAccess" mat-flat-button routerLink="/customers/new">
-    <mat-icon>add</mat-icon>
+    <app-icon name="plus" />
     New customer
   </button>
 </app-page-header>
 
 <mat-form-field appearance="outline" class="w-full max-w-sm" subscriptSizing="dynamic">
   <mat-label>Search</mat-label>
-  <mat-icon matPrefix>search</mat-icon>
+  <app-icon name="search" matPrefix />
   <input matInput placeholder="Code, name or email" (input)="list.onSearch($any($event.target).value)" />
 </mat-form-field>
 

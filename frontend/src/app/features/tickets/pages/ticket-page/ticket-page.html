@@ -4,7 +4,7 @@
     <app-status-badge [label]="statuses[t.status].label" [tone]="statuses[t.status].tone" />
   }
   <a mat-button routerLink="/tickets">
-    <mat-icon>arrow_back</mat-icon>
+    <app-icon name="arrow-left" />
     Tickets
   </a>
 </app-page-header>
@@ -142,7 +142,7 @@
           <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
             <mat-checkbox formControlName="isInternal">Internal note (staff only)</mat-checkbox>
             <button mat-flat-button type="submit" [disabled]="busy()">
-              <mat-icon>send</mat-icon>
+              <app-icon name="send" />
               Post
             </button>
           </div>
@@ -185,7 +185,7 @@
       <!-- AI summary (design doc §13) -->
       <section class="panel p-4">
         <div class="mb-2 flex items-center gap-2">
-          <mat-icon class="text-slate-500">insights</mat-icon>
+          <app-icon name="chart-line" class="text-slate-500" />
           <h2 class="m-0 flex-1 text-base font-medium">AI summary</h2>
           @if (canManage()) {
             <button mat-stroked-button (click)="summarize()" [disabled]="summarizing()">

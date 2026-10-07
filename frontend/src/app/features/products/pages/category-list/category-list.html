@@ -1,10 +1,10 @@
 <app-page-header title="Categories" subtitle="Group products for reporting and browsing">
   <a mat-button routerLink="/products">
-    <mat-icon>arrow_back</mat-icon>
+    <app-icon name="arrow-left" />
     Products
   </a>
   <button *appHasRole="writeAccess" mat-flat-button routerLink="/products/categories/new">
-    <mat-icon>add</mat-icon>
+    <app-icon name="plus" />
     New category
   </button>
 </app-page-header>
@@ -46,7 +46,7 @@
           (click)="delete(c, $event)"
           aria-label="Delete category"
         >
-          <mat-icon>delete</mat-icon>
+          <app-icon name="trash-2" />
         </button>
       </td>
     </ng-container>

@@ -1,10 +1,10 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, computed, input, output } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
 
 import { MarkdownLitePipe } from '../../../../shared/pipes/markdown-lite.pipe';
 import { AiAction, AiMessage } from '../../data/ai.models';
 import { ActionCard } from '../action-card/action-card';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 const INTENT_LABELS: Record<string, string> = {
   erp_query: 'ERP query',
@@ -19,7 +19,7 @@ const INTENT_LABELS: Record<string, string> = {
 
 @Component({
   selector: 'app-assistant-message',
-  imports: [DecimalPipe, MatIconModule, MarkdownLitePipe, ActionCard],
+  imports: [Icon, DecimalPipe, MarkdownLitePipe, ActionCard],
   templateUrl: './assistant-message.html',
   styles: `
     :host ::ng-deep .answer p { margin: 0 0 0.5rem; }

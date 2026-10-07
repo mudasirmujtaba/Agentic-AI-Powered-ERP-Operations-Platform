@@ -2,7 +2,6 @@ import { Component, OnInit, computed, inject, input, signal } from '@angular/cor
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -14,15 +13,15 @@ import { describeApiError, handleFormError } from '../../../../core/http/api-err
 import { PageHeader } from '../../../../shared/components/page-header/page-header';
 import { firstError } from '../../../../shared/forms/form-errors';
 import { CategoriesApi } from '../../data/catalog.api';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 @Component({
   selector: 'app-category-form',
-  imports: [
+  imports: [Icon, 
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
     MatFormFieldModule,
-    MatIconModule,
     MatInputModule,
     MatProgressBarModule,
     PageHeader,

@@ -3,7 +3,6 @@ import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { Router } from '@angular/router';
 import { catchError, of, switchMap, timer } from 'rxjs';
@@ -11,13 +10,14 @@ import { catchError, of, switchMap, timer } from 'rxjs';
 import { AutomationApi } from '../../../features/automation/data/automation.api';
 import { AppNotification, NotificationFeed } from '../../../features/automation/data/automation.models';
 import { MarkdownLitePipe } from '../../pipes/markdown-lite.pipe';
+import { Icon, IconName } from '../icon/icon';
 
 /** Polling interval for new notifications; jobs run at most a few times a day, so this can be lazy. */
 const POLL_MS = 60_000;
 
 @Component({
   selector: 'app-notification-bell',
-  imports: [DatePipe, MatBadgeModule, MatButtonModule, MatIconModule, MatMenuModule, MarkdownLitePipe],
+  imports: [Icon, DatePipe, MatBadgeModule, MatButtonModule, MatMenuModule, MarkdownLitePipe],
   template: `
     <button
       mat-icon-button
@@ -25,9 +25,7 @@ const POLL_MS = 60_000;
       (menuOpened)="refresh()"
       [attr.aria-label]="feed().unreadCount ? feed().unreadCount + ' unread notifications' : 'Notifications'"
     >
-      <mat-icon [matBadge]="feed().unreadCount || null" matBadgeColor="warn" matBadgeSize="small" aria-hidden="false">
-        notifications
-      </mat-icon>
+      <app-icon name="bell" [size]="20" [matBadge]="feed().unreadCount || null" matBadgeSize="small" />
     </button>
 
     <mat-menu #menu="matMenu" xPosition="before" class="notification-menu">
@@ -41,7 +39,7 @@ const POLL_MS = 60_000;
         <button mat-menu-item class="notification-item" (click)="open(n)" [class.unread]="!n.readAtUtc">
           <div class="py-2">
             <div class="flex items-center gap-2">
-              <mat-icon class="!mr-0 shrink-0" [class]="iconClass(n)">{{ icon(n) }}</mat-icon>
+              <app-icon [name]="icon(n)" class="shrink-0" [class]="iconClass(n)" />
               <span class="font-medium" [class.text-muted]="n.readAtUtc">{{ n.title }}</span>
             </div>
             <div class="notification-body text-xs text-slate-600" [innerHTML]="n.body | markdownLite"></div>
@@ -81,12 +79,12 @@ export class NotificationBell implements OnInit {
     this.api.notifications().pipe(catchError(() => of(null))).subscribe((feed) => feed && this.feed.set(feed));
   }
 
-  protected icon(n: AppNotification): string {
-    return n.severity === 'Critical' ? 'error' : n.severity === 'Warning' ? 'warning' : 'info';
+  protected icon(n: AppNotification): IconName {
+    return n.severity === 'Critical' ? 'circle-alert' : n.severity === 'Warning' ? 'triangle-alert' : 'info';
   }
 
   protected iconClass(n: AppNotification): string {
-    return n.severity === 'Critical' ? 'text-red-700' : n.severity === 'Warning' ? 'text-amber-700' : 'text-slate-500';
+    return n.severity === 'Critical' ? 'text-danger' : n.severity === 'Warning' ? 'text-warning' : 'text-muted';
   }
 
   protected open(n: AppNotification): void {

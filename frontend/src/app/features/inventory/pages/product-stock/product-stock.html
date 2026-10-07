@@ -3,7 +3,7 @@
     <app-status-badge [label]="statuses[s.status].label" [tone]="statuses[s.status].tone" />
   }
   <a mat-button routerLink="/inventory">
-    <mat-icon>arrow_back</mat-icon>
+    <app-icon name="arrow-left" />
     Inventory
   </a>
 </app-page-header>
@@ -35,11 +35,11 @@
   @if (canManage()) {
     <div class="mb-4 flex gap-2">
       <button mat-stroked-button (click)="toggle('adjust')">
-        <mat-icon>tune</mat-icon>
+        <app-icon name="sliders-horizontal" />
         Adjust stock
       </button>
       <button mat-stroked-button (click)="toggle('transfer')" [disabled]="s.warehouses.length === 0">
-        <mat-icon>swap_horiz</mat-icon>
+        <app-icon name="arrow-left-right" />
         Transfer
       </button>
     </div>

@@ -6,7 +6,7 @@
     }
   }
   <a mat-button routerLink="/finance">
-    <mat-icon>arrow_back</mat-icon>
+    <app-icon name="arrow-left" />
     Invoices
   </a>
 </app-page-header>
@@ -24,13 +24,13 @@
     <div class="mb-4 flex flex-wrap gap-2">
       @if (i.status === 'Draft') {
         <button mat-flat-button (click)="issue()" [disabled]="busy()">
-          <mat-icon>send</mat-icon>
+          <app-icon name="send" />
           Issue invoice
         </button>
       }
       @if (i.status === 'Issued' || i.status === 'PartiallyPaid') {
         <button mat-flat-button (click)="openPaymentForm()" [disabled]="busy()">
-          <mat-icon>payments</mat-icon>
+          <app-icon name="banknote" />
           Record payment
         </button>
       }

@@ -1,6 +1,5 @@
 import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSortModule } from '@angular/material/sort';
@@ -14,13 +13,13 @@ import { createPagedList } from '../../../../../shared/data/paged-list';
 import { HasRoleDirective } from '../../../../../shared/directives/has-role.directive';
 import { WarehousesApi } from '../../data/warehouses.api';
 import { Warehouse } from '../../data/warehouses.models';
+import { Icon } from '../../../../../shared/components/icon/icon';
 
 @Component({
   selector: 'app-warehouse-list',
-  imports: [
+  imports: [Icon, 
     RouterLink,
     MatButtonModule,
-    MatIconModule,
     MatPaginatorModule,
     MatProgressBarModule,
     MatSortModule,

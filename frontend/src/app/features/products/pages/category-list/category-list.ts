@@ -1,7 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
-import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -20,13 +19,13 @@ import { createPagedList } from '../../../../shared/data/paged-list';
 import { HasRoleDirective } from '../../../../shared/directives/has-role.directive';
 import { CategoriesApi } from '../../data/catalog.api';
 import { Category } from '../../data/catalog.models';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 @Component({
   selector: 'app-category-list',
-  imports: [
+  imports: [Icon, 
     RouterLink,
     MatButtonModule,
-    MatIconModule,
     MatPaginatorModule,
     MatProgressBarModule,
     MatSortModule,

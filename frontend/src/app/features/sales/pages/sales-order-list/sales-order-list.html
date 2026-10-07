@@ -1,6 +1,6 @@
 <app-page-header title="Sales orders" subtitle="Orders from draft through delivery">
   <button *appHasRole="writeAccess" mat-flat-button routerLink="/sales/new">
-    <mat-icon>add</mat-icon>
+    <app-icon name="plus" />
     New order
   </button>
 </app-page-header>
@@ -8,7 +8,7 @@
 <div class="flex flex-wrap items-center gap-4">
   <mat-form-field appearance="outline" class="w-full max-w-sm" subscriptSizing="dynamic">
     <mat-label>Search</mat-label>
-    <mat-icon matPrefix>search</mat-icon>
+    <app-icon name="search" matPrefix />
     <input matInput placeholder="Order number or customer" (input)="list.onSearch($any($event.target).value)" />
   </mat-form-field>
 

@@ -1,7 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -16,14 +15,14 @@ import { createPagedList } from '../../../../shared/data/paged-list';
 import { HasRoleDirective } from '../../../../shared/directives/has-role.directive';
 import { SuppliersApi } from '../../data/suppliers.api';
 import { SupplierListItem } from '../../data/suppliers.models';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 @Component({
   selector: 'app-supplier-list',
-  imports: [
+  imports: [Icon, 
     RouterLink,
     MatButtonModule,
     MatFormFieldModule,
-    MatIconModule,
     MatInputModule,
     MatPaginatorModule,
     MatProgressBarModule,

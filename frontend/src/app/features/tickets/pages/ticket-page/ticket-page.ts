@@ -5,7 +5,6 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
@@ -34,17 +33,17 @@ import { ProductsApi } from '../../../products/data/catalog.api';
 import { SalesOrdersApi } from '../../../sales/data/sales.api';
 import { TicketsApi } from '../../data/tickets.api';
 import { SaveTicketRequest, Ticket } from '../../data/tickets.models';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 @Component({
   selector: 'app-ticket-page',
-  imports: [
+  imports: [Icon, 
     DatePipe,
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
     MatCheckboxModule,
     MatFormFieldModule,
-    MatIconModule,
     MatInputModule,
     MatProgressBarModule,
     MatSelectModule,

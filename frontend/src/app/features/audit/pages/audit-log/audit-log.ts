@@ -2,7 +2,6 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -14,6 +13,7 @@ import { PageHeader } from '../../../../shared/components/page-header/page-heade
 import { StatusBadge } from '../../../../shared/components/status-badge/status-badge';
 import { createPagedList } from '../../../../shared/data/paged-list';
 import { PagedQuery, PagedResult } from '../../../../shared/models/paged';
+import { Icon } from '../../../../shared/components/icon/icon';
 
 interface AuditEntry {
   id: string;
@@ -28,7 +28,7 @@ interface AuditEntry {
 
 @Component({
   selector: 'app-audit-log',
-  imports: [DatePipe, MatFormFieldModule, MatIconModule, MatInputModule, MatPaginatorModule, MatProgressBarModule, MatSelectModule, MatTableModule, PageHeader, StatusBadge],
+  imports: [Icon, DatePipe, MatFormFieldModule, MatInputModule, MatPaginatorModule, MatProgressBarModule, MatSelectModule, MatTableModule, PageHeader, StatusBadge],
   templateUrl: './audit-log.html',
 })
 export class AuditLog {

@@ -67,7 +67,7 @@
           @for (step of meta().trace!; track $index) {
             <li class="flex justify-between gap-4 border-t border-slate-100 py-1" [class.pl-4]="step.kind === 'tool'">
               <span>
-                @if (step.status === 'error') { <mat-icon class="!h-3 !w-3 !text-[12px]" aria-label="failed">error</mat-icon> }
+                @if (step.status === 'error') { <app-icon name="circle-alert" label="failed" /> }
                 {{ step.node }}
                 @if (step.detail) { <span class="text-slate-500">· {{ step.detail }}</span> }
               </span>

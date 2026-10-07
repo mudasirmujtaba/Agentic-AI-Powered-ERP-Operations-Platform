@@ -3,11 +3,11 @@ import { Component, inject, input } from '@angular/core';
 import { FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 
 import { firstError } from '../../forms/form-errors';
+import { Icon } from '../icon/icon';
 
 export interface LineProductOption {
   id: string;
@@ -37,7 +37,7 @@ export function createLineItem(
 /** Editable product / quantity / price rows for sales and purchase orders. */
 @Component({
   selector: 'app-line-items-editor',
-  imports: [CurrencyPipe, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
+  imports: [Icon, CurrencyPipe, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
     <div class="flex flex-col gap-1">
       @for (line of lines().controls; track line; let i = $index) {
@@ -72,7 +72,7 @@ export function createLineItem(
 
           <div class="col-span-1 pt-2 text-right">
             <button mat-icon-button type="button" (click)="remove(i)" [disabled]="lines().length === 1" aria-label="Remove line">
-              <mat-icon>delete</mat-icon>
+              <app-icon name="trash-2" />
             </button>
           </div>
         </div>
@@ -81,7 +81,7 @@ export function createLineItem(
 
     <div class="mt-1 flex items-center justify-between">
       <button mat-stroked-button type="button" (click)="add()">
-        <mat-icon>add</mat-icon>
+        <app-icon name="plus" />
         Add line
       </button>
       <span class="text-base font-medium">Total {{ total() | currency: 'USD' }}</span>

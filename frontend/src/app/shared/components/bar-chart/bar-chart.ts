@@ -69,7 +69,7 @@ interface Bar {
 
       @if (hoveredBar(); as bar) {
         <div
-          class="pointer-events-none absolute rounded-md px-3 py-2 text-xs shadow-md tooltip"
+          class="pointer-events-none absolute px-3 py-2 text-xs tooltip"
           [style.left.%]="((bar.x + bar.width / 2) / chartWidth()) * 100"
           [style.top.%]="(bar.y / height) * 100"
         >
@@ -88,15 +88,17 @@ interface Bar {
     </div>
   `,
   styles: `
-    .bar { fill: var(--mat-sys-primary); transition: opacity 120ms; }
+    .bar { fill: var(--primary-600); transition: opacity 120ms; }
     .bar.dimmed { opacity: 0.45; }
-    .grid-line { stroke: var(--mat-sys-outline-variant); stroke-width: 1; }
-    .baseline { stroke: var(--mat-sys-outline); stroke-width: 1; }
-    .axis-text { fill: #64748b; font-size: 11.5px; }
+    .grid-line { stroke: var(--gray-100); stroke-width: 1; }
+    .baseline { stroke: var(--border-strong); stroke-width: 1; }
+    .axis-text { fill: var(--text-muted); font-size: var(--text-xs); font-variant-numeric: tabular-nums; }
     .tooltip {
       transform: translate(-50%, calc(-100% - 8px));
-      background: var(--mat-sys-inverse-surface);
-      color: var(--mat-sys-inverse-on-surface);
+      background: var(--ink-900);
+      color: var(--text-on-ink);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-overlay);
       white-space: nowrap;
     }
   `,

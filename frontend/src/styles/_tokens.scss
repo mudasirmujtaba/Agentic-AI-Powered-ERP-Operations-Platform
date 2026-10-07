@@ -1,0 +1,118 @@
+// OpsPilot design tokens. The single source of truth for colour, type, spacing, radius and elevation.
+// Components use these custom properties (directly, or through the Tailwind theme and Material theme that map onto
+// them). Never hardcode a hex value, radius or shadow in a component.
+
+:root {
+  // Neutrals
+  --gray-0: #ffffff;
+  --gray-25: #fafbfc;
+  --gray-50: #f5f7fa;
+  --gray-100: #eef1f5;
+  --gray-200: #e3e7ed;
+  --gray-300: #cdd3dc;
+  --gray-400: #9aa3b2;
+  --gray-500: #6b7485;
+  --gray-600: #4d5565;
+  --gray-700: #353b48;
+  --gray-800: #1f2430;
+  --gray-900: #111520;
+
+  // Brand ink (dark surfaces: navigation, sign-in panel)
+  --ink-950: #0a0f1c;
+  --ink-900: #0f1626;
+  --ink-800: #18213a;
+
+  // Primary: the only accent colour for non-status purposes
+  --primary-50: #eef3ff;
+  --primary-100: #dce6ff;
+  --primary-500: #2f5bea;
+  --primary-600: #2449c9;
+  --primary-700: #1d3ba3;
+
+  // Semantic: status only (badges, alerts, validation), never decoration
+  --success: #12805c;
+  --success-bg: #e8f5ef;
+  --warning: #b25e09;
+  --warning-bg: #fdf3e6;
+  --danger: #c4320a;
+  --danger-bg: #fdecea;
+  --info: #2449c9;
+  --info-bg: #eef3ff;
+
+  // Semantic aliases: prefer these in components
+  --text-primary: var(--gray-900);
+  --text-secondary: var(--gray-600);
+  --text-muted: var(--gray-500);
+  --text-on-ink: var(--gray-0);
+  --text-on-ink-muted: var(--gray-400);
+  --border: var(--gray-200);
+  --border-strong: var(--gray-300);
+  --surface: var(--gray-0);
+  --surface-subtle: var(--gray-25);
+  --surface-sunken: var(--gray-50);
+  --surface-hover: var(--gray-50);
+  --surface-selected: var(--primary-50);
+  --focus-ring: rgb(47 91 234 / 35%); // primary-500 at 35%
+
+  // Lines on dark (ink) surfaces
+  --ink-border: rgb(255 255 255 / 8%);
+  --ink-hover: rgb(255 255 255 / 6%);
+  --ink-selected: rgb(47 91 234 / 24%);
+
+  // Typography
+  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', Consolas, 'SFMono-Regular', monospace;
+  --font-features: 'cv11', 'ss01';
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  // Type scale (size / line height)
+  --text-xs: 12px;
+  --leading-xs: 16px;
+  --text-sm: 13px;
+  --leading-sm: 18px;
+  --text-base: 14px;
+  --leading-base: 20px;
+  --text-md: 16px;
+  --leading-md: 24px;
+  --text-lg: 18px;
+  --leading-lg: 26px;
+  --text-xl: 20px;
+  --leading-xl: 28px;
+  --text-2xl: 24px;
+  --leading-2xl: 32px;
+  --text-3xl: 30px;
+  --leading-3xl: 38px;
+  --tracking-tight: -0.01em;
+
+  // Spacing: 4px grid only
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  // Radius: nothing larger than 8px anywhere
+  --radius-sm: 4px; // badges, checkboxes
+  --radius-md: 6px; // inputs, buttons, cards
+  --radius-lg: 8px; // modals, popovers, menus
+
+  // Elevation: borders by default; shadows only for floating layers
+  --shadow-overlay: 0 8px 24px rgb(16 24 40 / 12%), 0 2px 6px rgb(16 24 40 / 6%);
+
+  // Control sizes
+  --control-sm: 32px;
+  --control-md: 36px;
+  --control-lg: 40px;
+  --input-height: 40px;
+
+  // Layout
+  --sidebar-width: 248px;
+  --topbar-height: 56px;
+}
